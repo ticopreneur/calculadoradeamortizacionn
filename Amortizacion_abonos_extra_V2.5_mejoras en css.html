@@ -1,0 +1,2928 @@
+<!DOCTYPE html>
+<!-- Calculadora de Amortización v2.5 - Layout de dos columnas -->
+<html lang="es">
+
+<head>
+    <meta charset="UTF-8">
+    <title>Calculadora de Amortización v2.5</title>
+    <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+    <style>
+        body {
+            font-family: 'Raleway', sans-serif;
+            margin: 0;
+            padding: 0;
+            background-color: #f8f9fa;
+            color: #333;
+        }
+
+        h1, h2, h3, h4 {
+            color: #333;
+            margin-top: 0;
+        }
+
+        /* Layout principal de dos columnas */
+        .main-layout {
+            display: flex;
+            max-width: 1200px;
+            margin: 20px auto;
+            gap: 30px;
+        }
+
+        /* Columna izquierda - Entradas */
+        .left-column {
+            width: 350px;
+            flex-shrink: 0;
+        }
+
+        /* Columna derecha - Resultados */
+        .right-column {
+            flex-grow: 1;
+        }
+
+        /* Contenedores de secciones */
+        .section-container {
+            background-color: white;
+            border-radius: 8px;
+            box-shadow: 0 2px 8px rgba(0,0,0,0.1);
+            padding: 20px;
+            margin-bottom: 20px;
+        }
+
+        /* Inputs y controles */
+        input,
+        select,
+        button {
+            padding: 10px;
+            margin: 5px 0;
+            border: 1px solid #ccc;
+            border-radius: 5px;
+            width: 100%;
+            box-sizing: border-box;
+        }
+
+        button {
+            background-color: #007BFF;
+            color: white;
+            cursor: pointer;
+            font-weight: 600;
+        }
+
+        button:hover {
+            background-color: #0056b3;
+        }
+
+        /* Tablas */
+        table {
+            width: 100%;
+            border-collapse: collapse;
+        }
+
+        table,
+        th,
+        td {
+            border: 1px solid #ccc;
+        }
+
+        th,
+        td {
+            padding: 10px;
+            text-align: left;
+        }
+
+        th {
+            background-color: #f2f2f2;
+        }
+
+        tbody tr:nth-child(odd) {
+            background-color: #f9f9f9;
+        }
+
+        .tablas {
+            display: flex;
+            flex-direction: column;
+        }
+
+        #tablaAmortizacionContainer,
+        #tablaDesgloseContainer {
+            margin-bottom: 30px;
+            width: 100%;
+        }
+
+        /* Estilo para las pestañas */
+        .tab-container {
+            margin-bottom: 20px;
+        }
+        
+        .tabs {
+            display: flex;
+            border-bottom: 2px solid #e0e0e0;
+            margin-bottom: 20px;
+        }
+        
+        .tab-button {
+            padding: 12px 24px;
+            margin-right: 4px;
+            border: none;
+            background: #f5f5f5;
+            color: #333;
+            font-size: 16px;
+            font-weight: 500;
+            cursor: pointer;
+            border-radius: 4px 4px 0 0;
+            transition: all 0.3s ease;
+            width: auto;
+        }
+        
+        .tab-button:hover {
+            background: #e3e3e3;
+        }
+        
+        .tab-button.active {
+            background: #007BFF;
+            color: white;
+            border-bottom: 2px solid #0056b3;
+        }
+        
+        .tab-content {
+            display: none;
+            padding: 20px 0;
+        }
+        
+        .tab-content.active {
+            display: block;
+            animation: fadeIn 0.3s ease-in-out;
+        }
+        
+        @keyframes fadeIn {
+            from { opacity: 0; }
+            to { opacity: 1; }
+        }
+        
+        /* Estilos para el gráfico */
+        .grafico-fullscreen {
+            width: 100%;
+            min-height: 500px; /* Altura mínima */
+            height: auto;
+            background-color: white;
+            padding: 20px;
+            border-radius: 8px;
+            box-shadow: 0 2px 10px rgba(0,0,0,0.1);
+            position: relative;
+            margin-bottom: 40px; /* Espacio para el cuadro de datos debajo */
+        }
+
+        /* Altura adicional cuando hay simulación con abonos */
+        .with-comparison {
+            min-height: 550px;
+        }
+
+                /* Estilo para el cuadro de datos debajo del gráfico */
+        #chart-data-display {
+            font-family: 'Raleway', sans-serif;
+            background-color: white;
+            border-radius: 8px;
+            padding: 15px;
+            box-shadow: 0 1px 4px rgba(0,0,0,0.1);
+            border-left: 4px solid #007BFF;
+            max-width: 400px;
+            margin-top: 15px;
+            margin-left: auto;
+            font-size: 14px;
+        }
+
+        #chart-data-display .header {
+            font-weight: bold;
+            margin-bottom: 10px;
+            font-size: 16px;
+            color: #333;
+        }
+
+        #chart-data-display .data-row {
+            display: flex;
+            align-items: center;
+            margin: 8px 0;
+        }
+
+        #chart-data-display .color-indicator {
+            width: 12px;
+            height: 12px;
+            border-radius: 2px;
+            margin-right: 10px;
+            flex-shrink: 0;
+        }
+
+        #chart-data-display .label {
+            flex-grow: 1;
+        }
+
+        #chart-data-display .value {
+            font-weight: 600;
+            text-align: right;
+        }
+
+        #chart-data-display .comparison-section {
+            margin-top: 10px;
+            padding-top: 10px;
+            border-top: 1px solid #eee;
+        }
+        
+        /* Estilos para abonos extraordinarios */
+        .abonos-container {
+            background-color: #f0f7ff;
+            padding: 15px;
+            border-radius: 8px;
+            border: 1px solid #c0d6f9;
+            margin-top: 20px;
+        }
+
+        .abonos-container h3 {
+            color: #0056b3;
+            margin-top: 0;
+        }
+        
+        .calculado-field {
+            background-color: #e9e9e9;
+            color: #333;
+            font-weight: bold;
+        }
+
+        .abono-extra-col {
+            background-color: #e6f7ff;
+        }
+
+        .comparison-legend {
+            background-color: #f8f9fa;
+            padding: 15px;
+            border-radius: 8px;
+            margin-bottom: 20px;
+            border: 1px solid #ddd;
+        }
+        
+        /* Opciones de tipo de abono */
+        .tipo-abono-container {
+            margin-top: 15px;
+            padding: 15px;
+            background-color: #e8f4ff;
+            border-radius: 8px;
+            border: 1px dashed #a0c6e8;
+        }
+        
+        .option-container {
+            margin: 10px 0;
+            padding-left: 10px;
+        }
+        
+        .radio-option {
+            margin-right: 10px;
+        }
+        
+        /* Campos específicos de cada opción */
+        .opcion-campo {
+            margin-top: 15px;
+            padding: 15px;
+            background-color: #f5f9ff;
+            border-radius: 8px;
+            display: none; /* Oculto por defecto */
+        }
+        
+        .opcion-campo.active {
+            display: block;
+        }
+        
+        /* Progreso de cálculo */
+        .progress-bar-container {
+            width: 100%;
+            background-color: #e0e0e0;
+            border-radius: 5px;
+            margin-top: 10px;
+            height: 10px;
+            overflow: hidden;
+        }
+        
+        .progress-bar {
+            height: 100%;
+            background-color: #4CAF50;
+            width: 0;
+            transition: width 0.3s ease;
+        }
+        
+        /* Efectos de loading */
+        .loading {
+            display: inline-block;
+            position: relative;
+            width: 20px;
+            height: 20px;
+            margin-right: 10px;
+        }
+        
+        .loading:after {
+            content: " ";
+            display: block;
+            width: 16px;
+            height: 16px;
+            border-radius: 50%;
+            border: 3px solid #3498db;
+            border-color: #3498db transparent #3498db transparent;
+            animation: loading 1.2s linear infinite;
+        }
+        
+        @keyframes loading {
+            0% { transform: rotate(0deg); }
+            100% { transform: rotate(360deg); }
+        }
+        
+        #estadoCalculo {
+            margin-top: 5px;
+            font-style: italic;
+            color: #666;
+        }
+        
+        /* Campos calculados */
+        .calculado-field {
+            background-color: #f0f8ff;
+            border-left: 3px solid #007BFF;
+        }
+        
+        /* Cuotas objetivo */
+        #cuotaObjetivoContainer {
+            background-color: #f0f0f0;
+            padding: 10px;
+            border-radius: 5px;
+            border-left: 3px solid #28a745;
+        }
+        
+        /* Resultados de cálculo */
+        .info-text {
+            margin-top: 10px;
+            padding: 10px;
+            background-color: #e8f4f8;
+            border-radius: 5px;
+            display: none;
+        }
+        
+        .info-text.active {
+            display: block;
+            animation: fadeIn 0.5s;
+        }
+        
+        /* Cambios en el período */
+        .periodo-limite {
+            background-color: #fff3cd;
+            border-left: 3px solid #ffc107;
+        }
+        
+        small {
+            display: block;
+            color: #6c757d;
+            margin-top: 2px;
+            font-size: 0.85em;
+        }
+
+        /* Botones de exportación e impresión */
+        .print-export-container {
+            display: flex;
+            justify-content: flex-end;
+            gap: 15px;
+            margin-top: 20px;
+        }
+
+        .print-export-container button {
+            width: auto;
+            padding: 10px 20px;
+        }
+
+        /* Responsive */
+        @media (max-width: 768px) {
+            .main-layout {
+                flex-direction: column;
+            }
+            
+            .left-column {
+                width: 100%;
+            }
+            
+            .tabs {
+                flex-direction: column;
+            }
+            
+            .tab-button {
+                width: 100%;
+                margin-bottom: 2px;
+                border-radius: 0;
+            }
+            
+            #chart-data-display {
+                position: static;
+                margin-top: 10px;
+                width: 100%;
+            }
+        }
+    </style>
+</head>
+
+<body>
+    <div class="main-layout">
+        <!-- Columna Izquierda - Formularios de entrada -->
+        <div class="left-column">
+            <div class="section-container">
+                <h3>Información Básica del Crédito</h3>
+                <div>
+                    <label for="monto">Monto del Crédito</label>
+                    <input type="number" id="monto" required>
+                </div>
+                <div>
+                    <label for="moneda">Moneda</label>
+                    <select id="moneda" required>
+                        <option value="colones">Colones</option>
+                        <option value="dolares">Dólares</option>
+                    </select>
+                </div>
+                <div>
+                    <label for="plazo">Plazo del Crédito (años)</label>
+                    <input type="number" id="plazo" required>
+                </div>
+            </div>
+
+            <div class="section-container">
+                <h3>Tasas de Interés</h3>
+                <div id="tasasContainer"></div>
+                <button onclick="agregarTasa()">Agregar Tasa</button>
+            </div>
+
+            <div class="section-container">
+                <h3>Tasa de Referencia</h3>
+                <label for="tbp">TBP, TRI, SOFT o la que corresponda (%)</label>
+                <input type="number" step="0.01" id="tbp" required>
+                <label for="margen">Margen Banco (%)</label>
+                <input type="number" step="0.01" id="margen" required>
+            </div>
+
+            <!-- Abonos Extraordinarios -->
+            <div class="section-container abonos-container">
+                <h3>Abonos Extraordinarios</h3>
+                
+                <div>
+                    <input type="checkbox" id="activarAbonos" onchange="toggleAbonosOptions()">
+                    <label for="activarAbonos">Activar simulación de abono extraordinario</label>
+                </div>
+                
+                <div id="opcionesAbonos" style="display: none; margin-top: 15px;">
+                    <!-- Opciones de tipo de abono -->
+                    <div class="tipo-abono-container">
+                        <div><strong>¿Qué deseas hacer con el abono extraordinario?</strong></div>
+                        
+                        <div class="option-container">
+                            <input type="radio" id="reducirPlazo" name="tipoAbono" value="reducirPlazo" checked class="radio-option" onchange="cambiarTipoAbono()">
+                            <label for="reducirPlazo">Reducir el plazo (mantener la misma cuota)</label>
+                        </div>
+                        
+                        <div class="option-container">
+                            <input type="radio" id="reducirCuota" name="tipoAbono" value="reducirCuota" class="radio-option" onchange="cambiarTipoAbono()">
+                            <label for="reducirCuota">Reducir la cuota (mantener el mismo plazo)</label>
+                        </div>
+                        
+                        <div class="option-container">
+                            <input type="radio" id="modoMixto" name="tipoAbono" value="modoMixto" class="radio-option" onchange="cambiarTipoAbono()">
+                            <label for="modoMixto">Modo mixto (reducir cuota y plazo)</label>
+                        </div>
+                    </div>
+                    
+                    <!-- Campos específicos para reducir plazo -->
+                    <div id="opcionReducirPlazo" class="opcion-campo active">
+                        <div>
+                            <label for="plazoDeseado">Plazo deseado (años):</label>
+                            <input type="number" id="plazoDeseado" min="1" step="1">
+                        </div>
+                        
+                        <div style="margin-top: 15px;">
+                            <label for="montoAbonoPlazo">Monto Mensual de Abono Extraordinario:</label>
+                            <input type="number" id="montoAbonoPlazo" readonly class="calculado-field">
+                            <button onclick="calcularAbonoNecesarioParaPlazo()" class="btn-success">Calcular Abono Necesario</button>
+                        </div>
+                        <div id="resultadoCalculoPlazo" class="info-text"></div>
+                        
+                        <div id="progresoCalculoPlazo" style="display: none; margin-top: 15px;">
+                            <div class="progress-bar-container">
+                                <div class="progress-bar" id="progressBarPlazo"></div>
+                            </div>
+                            <div id="estadoCalculoPlazo">Calculando...</div>
+                        </div>
+                    </div>
+                    
+                    <!-- Campos específicos para reducir cuota -->
+                    <div id="opcionReducirCuota" class="opcion-campo">
+                        <div>
+                            <label for="periodoAbono">Período para aplicar abonos (meses):</label>
+                            <input type="number" id="periodoAbono" min="1" value="12" step="1">
+                            <small>Número de meses durante los cuales se harán abonos extraordinarios</small>
+                        </div>
+                        
+                        <div style="margin-top: 15px;">
+                            <input type="checkbox" id="usarCuotaObjetivo" onchange="toggleCuotaObjetivo()">
+                            <label for="usarCuotaObjetivo">Establecer cuota objetivo</label>
+                        </div>
+                        
+                        <div id="cuotaObjetivoContainer" style="display: none; margin-top: 10px; padding-left: 20px;">
+                            <label for="cuotaObjetivo">Cuota objetivo deseada:</label>
+                            <input type="number" id="cuotaObjetivo" step="1000">
+                            <button onclick="calcularAbonoNecesarioParaCuota()" class="btn-success">Calcular Abono Necesario</button>
+                            <div id="resultadoCalculoAbonoParaCuota" class="info-text"></div>
+                        </div>
+                        
+                        <div style="margin-top: 15px;">
+                            <label for="montoAbonoCuota">Monto Mensual de Abono Extraordinario:</label>
+                            <input type="number" id="montoAbonoCuota" step="1000">
+                        </div>
+                        
+                        <div style="margin-top: 15px;">
+                            <button onclick="simularReduccionCuota()" class="btn-success">Simular Reducción de Cuota</button>
+                        </div>
+                        <div id="resultadoCalculoCuota" class="info-text"></div>
+                        
+                        <div id="progresoCalculo" style="display: none; margin-top: 15px;">
+                            <div class="progress-bar-container">
+                                <div class="progress-bar" id="progressBar"></div>
+                            </div>
+                            <div id="estadoCalculo">Calculando...</div>
+                        </div>
+                    </div>
+                    
+                    <!-- Campos específicos para modo mixto -->
+                    <div id="opcionModoMixto" class="opcion-campo">
+                        <div>
+                            <label for="periodoAbonoMixto">Período para aplicar abonos fase 1 (meses):</label>
+                            <input type="number" id="periodoAbonoMixto" min="1" value="12" step="1">
+                            <small>Número de meses durante los cuales se harán abonos para reducir cuota (fase 1)</small>
+                        </div>
+                        
+                        <div style="margin-top: 15px;">
+                            <label for="cuotaObjetivoMixto">Cuota objetivo después de fase 1:</label>
+                            <input type="number" id="cuotaObjetivoMixto" step="1000">
+                            <small>Cuota mensual deseada después de aplicar los abonos de la fase 1</small>
+                        </div>
+                        
+                        <div style="margin-top: 15px;">
+                            <label for="plazoDeseadoMixto">Plazo total deseado (años):</label>
+                            <input type="number" id="plazoDeseadoMixto" min="1" step="1">
+                            <small>Plazo total al que se desea llegar aplicando los abonos de fase 2</small>
+                        </div>
+                        
+                        <div style="margin-top: 15px;">
+                            <button onclick="calcularAbonoMixto()" class="btn-success">Calcular Abonos Necesarios</button>
+                        </div>
+                        
+                        <div id="resultadoCalculoMixto" class="info-text"></div>
+                        
+                        <div id="progresoCalculoMixto" style="display: none; margin-top: 15px;">
+                            <div class="progress-bar-container">
+                                <div class="progress-bar" id="progressBarMixto"></div>
+                            </div>
+                            <div id="estadoCalculoMixto">Calculando...</div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <button onclick="calcular()" style="width: 100%; margin-top: 15px;">Calcular</button>
+        </div>
+
+        <!-- Columna Derecha - Resultados -->
+        <div class="right-column">
+            <!-- Comparación de resultados -->
+            <div id="comparacionResultados" class="comparison-legend" style="display: none;">
+                <h4>Comparación de Resultados</h4>
+                <div id="resumenOriginal"></div>
+                <div id="resumenConAbonos"></div>
+                <div id="ahorro"></div>
+            </div>
+
+            <!-- Contenido de pestañas -->
+            <div class="tab-container section-container">
+                <div class="tabs">
+                  <button class="tab-button active" data-tab="tablas">Tablas de Amortización</button>
+                  <button class="tab-button" data-tab="grafico">Gráfico</button>
+                </div>
+                
+                <div class="tab-content active" id="tablas-content">
+                  <!-- Tablas de amortización -->
+                  <div class="tablas">
+                    <div id="tablaDesgloseContainer">
+                      <h3>Desglose de Cuota</h3>
+                      <table border="1" id="tablaDesglose">
+                        <thead>
+                          <tr>
+                            <th>Mes</th>
+                            <th>Cuota Mensual</th>
+                            <th>Interés</th>
+                          </tr>
+                        </thead>
+                        <tbody>
+                        </tbody>
+                      </table>
+                    </div>
+              
+                    <div id="tablaAmortizacionContainer">
+                      <h3>Tabla de Amortización</h3>
+                      <table border="1" id="tablaAmortizacion">
+                        <thead>
+                          <tr>
+                            <th>Mes</th>
+                            <th>Cuota Mensual</th>
+                            <th>Interés</th>
+                            <th>Principal</th>
+                            <th>Abono Extra</th>
+                            <th>Saldo</th>
+                          </tr>
+                        </thead>
+                        <tbody>
+                        </tbody>
+                      </table>
+                    </div>
+                  </div>
+                </div>
+                
+                <div class="tab-content" id="grafico-content">
+                  <!-- Gráfico a pantalla completa -->
+                  <div class="grafico-fullscreen">
+                    <canvas id="amortizacionChart"></canvas>
+                  </div>
+                </div>
+            </div>
+
+            <!-- Botones de descarga e impresión -->
+            <div class="print-export-container">
+                <button onclick="exportarCSV()">Exportar a CSV</button>
+                <button onclick="window.print()">Imprimir Resultados</button>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        var chart; // Variable global para el gráfico
+        var amortizacionInicial = []; // Datos iniciales sin abonos para tabla de desglose
+
+        function formatoMoneda(valor, moneda) {
+            var opciones = {
+                style: 'currency',
+                currency: (moneda === "colones") ? 'CRC' : 'USD',
+                minimumFractionDigits: 2,
+                maximumFractionDigits: 2
+            };
+            var resultado = valor.toLocaleString('es-CR', opciones);
+            return (moneda === "dolares") ? resultado.replace("USD", "$") : resultado;
+        }
+
+        function exportarCSV() {
+            var headerRow = 'Mes,Cuota Mensual,Interés,Principal,Abono Extra,Saldo\n';
+            var csv = headerRow;
+            var rows = document.querySelectorAll("#tablaAmortizacion tbody tr");
+
+            for (var i = 0; i < rows.length; i++) {
+                var row = [],
+                    cols = rows[i].querySelectorAll("td");
+
+                for (var j = 0; j < cols.length; j++) {
+                    // Si es una columna de valores monetarios, elimina el formato de moneda
+                    if (j > 0) {
+                        row.push(cols[j].innerText.replace(/[^0-9.,-]/g, '').replace(',', '.'));
+                    } else {
+                        row.push(cols[j].innerText);
+                    }
+                }
+
+                csv += row.join(",") + "\n";
+            }
+
+            // Crear un enlace para descargar el archivo CSV
+            var csvFile = new Blob([csv], {
+                type: "text/csv"
+            });
+            var downloadLink = document.createElement("a");
+            downloadLink.download = 'amortizacion.csv';
+            downloadLink.href = window.URL.createObjectURL(csvFile);
+            downloadLink.style.display = "none";
+            document.body.appendChild(downloadLink);
+            downloadLink.click();
+        }
+
+        function printTable(tableId) {
+            var printWindow = window.open('', '_blank');
+            printWindow.document.write('<html><head><title>Imprimir</title></head><body>');
+            printWindow.document.write(document.getElementById(tableId).outerHTML);
+            printWindow.document.write('</body></html>');
+            printWindow.document.close();
+            printWindow.print();
+        }
+
+        function agregarTasa() {
+            const tasaDiv = document.createElement("div");
+
+            const duracionLabel = document.createElement("label");
+            duracionLabel.textContent = "Duración (meses)";
+            tasaDiv.appendChild(duracionLabel);
+
+            const duracionInput = document.createElement("input");
+            duracionInput.type = "number";
+            duracionInput.className = "duracion";
+            tasaDiv.appendChild(duracionInput);
+
+            const tasaLabel = document.createElement("label");
+            tasaLabel.textContent = "Tasa (%)";
+            tasaDiv.appendChild(tasaLabel);
+
+            const tasaInput = document.createElement("input");
+            tasaInput.type = "number";
+            tasaInput.step = "0.01";
+            tasaInput.className = "tasa";
+            tasaDiv.appendChild(tasaInput);
+
+            const eliminarButton = document.createElement("button");
+            eliminarButton.textContent = "Eliminar";
+            eliminarButton.onclick = function() {
+                tasaDiv.remove();
+            };
+            tasaDiv.appendChild(eliminarButton);
+
+            document.getElementById("tasasContainer").appendChild(tasaDiv);
+        }
+        
+        // Función para mostrar/ocultar opciones de abonos
+        function toggleAbonosOptions() {
+            var activado = document.getElementById("activarAbonos").checked;
+            document.getElementById("opcionesAbonos").style.display = activado ? "block" : "none";
+            
+            // Si se desactiva, limpiamos los valores
+            if (!activado) {
+                document.getElementById("montoAbonoPlazo").value = "";
+                document.getElementById("montoAbonoCuota").value = "";
+                var resultadoDivPlazo = document.getElementById("resultadoCalculoPlazo");
+                var resultadoDivCuota = document.getElementById("resultadoCalculoCuota");
+                var resultadoDivMixto = document.getElementById("resultadoCalculoMixto");
+                if (resultadoDivPlazo) resultadoDivPlazo.innerHTML = "";
+                if (resultadoDivCuota) resultadoDivCuota.innerHTML = "";
+                if (resultadoDivMixto) resultadoDivMixto.innerHTML = "";
+                
+                // Limpiar variables globales del modo mixto
+                window.abono1Mixto = undefined;
+                window.abono2Mixto = undefined;
+                window.periodoMixto = undefined;
+                window.cuotaObjetivoFase2 = undefined;
+            }
+            
+            // Actualizar la interfaz según la opción seleccionada
+            cambiarTipoAbono();
+        }
+        
+        // Función para cambiar entre las opciones de tipo de abono
+        function cambiarTipoAbono() {
+            var tipoAbono = document.querySelector('input[name="tipoAbono"]:checked').value;
+            
+            // Ocultar todos los campos específicos
+            document.querySelectorAll('.opcion-campo').forEach(function(el) {
+                el.classList.remove('active');
+            });
+            
+            // Mostrar solo los campos de la opción seleccionada
+            if (tipoAbono === "reducirPlazo") {
+                document.getElementById("opcionReducirPlazo").classList.add('active');
+            } else if (tipoAbono === "reducirCuota") {
+                document.getElementById("opcionReducirCuota").classList.add('active');
+            } else if (tipoAbono === "modoMixto") {
+                document.getElementById("opcionModoMixto").classList.add('active');
+            }
+        }
+        
+        // Función provisional para mostrar/ocultar la sección de cuota objetivo
+        function toggleCuotaObjetivo() {
+            var usarCuotaObjetivo = document.getElementById("usarCuotaObjetivo").checked;
+            document.getElementById("cuotaObjetivoContainer").style.display = usarCuotaObjetivo ? "block" : "none";
+            
+            // Si se desactiva, limpiamos el valor
+            if (!usarCuotaObjetivo) {
+                document.getElementById("cuotaObjetivo").value = "";
+                var resultadoDiv = document.getElementById("resultadoCalculoAbonoParaCuota");
+                if (resultadoDiv) resultadoDiv.innerHTML = "";
+            }
+        }
+        
+        // Función para calcular el abono necesario para reducir el plazo
+function calcularAbonoNecesarioParaPlazo() {
+    var monto = parseFloat(document.getElementById("monto").value);
+    if (!monto) {
+        alert("Por favor, ingrese el monto del crédito primero.");
+        return;
+    }
+    
+    var plazoTotal = parseInt(document.getElementById("plazo").value) * 12;
+    if (!plazoTotal) {
+        alert("Por favor, ingrese el plazo del crédito primero.");
+        return;
+    }
+    
+    var plazoDeseado = parseInt(document.getElementById("plazoDeseado").value) * 12;
+    if (!plazoDeseado) {
+        alert("Por favor, ingrese el plazo deseado.");
+        return;
+    }
+    
+    if (plazoDeseado >= plazoTotal) {
+        alert("El plazo deseado debe ser menor que el plazo original (" + plazoTotal + " meses).");
+        return;
+    }
+    
+    // Obtener todas las duraciones y tasas
+    var duraciones = Array.from(document.getElementsByClassName("duracion")).map(input => parseInt(input.value));
+    var tasas = Array.from(document.getElementsByClassName("tasa")).map(input => parseFloat(input.value) / 100);
+    
+    if (duraciones.length === 0 || tasas.length === 0 || duraciones.includes(NaN) || tasas.includes(NaN)) {
+        alert("Por favor, complete todas las tasas de interés.");
+        return;
+    }
+    
+    var tbp = parseFloat(document.getElementById("tbp").value) / 100;
+    var margen = parseFloat(document.getElementById("margen").value) / 100;
+    
+    if (isNaN(tbp) || isNaN(margen)) {
+        alert("Por favor, ingrese los valores de TBP y Margen.");
+        return;
+    }
+    
+    // Calculamos la amortización sin abonos para referencia
+    var amortizacionOriginal = calcularAmortizacion(monto, plazoTotal, duraciones, tasas, tbp, margen, 0);
+    var cuotaOriginal = amortizacionOriginal[0].cuotaMensual;
+    
+    console.log("Cuota original: " + cuotaOriginal.toFixed(2));
+    
+    // Calculamos un rango adecuado para la búsqueda binaria
+    var minAbono = 1000;
+    var maxAbono = cuotaOriginal * 3; // Un valor suficientemente alto
+    var tolerance = 100;
+    var intentos = 0;
+    var maxIntentos = 50;
+    
+    console.log("Iniciando búsqueda para reducir plazo a " + plazoDeseado + " meses");
+    
+    // Búsqueda binaria para encontrar el abono necesario
+    var abonoNecesario = 0;
+    
+    while ((maxAbono - minAbono) > tolerance && intentos < maxIntentos) {
+        var abono = (minAbono + maxAbono) / 2;
+        
+        // Simular con este abono
+        var simulacion = calcularAmortizacion(monto, plazoTotal, duraciones, tasas, tbp, margen, abono);
+        
+        var plazoResultante = simulacion.length;
+        
+        console.log("Intento " + (intentos+1) + ": Abono=" + abono.toFixed(2) + 
+                    ", Plazo resultante=" + plazoResultante + " meses");
+        
+        if (plazoResultante > plazoDeseado) {
+            // Necesitamos aumentar el abono para reducir más el plazo
+            minAbono = abono;
+        } else if (plazoResultante < plazoDeseado) {
+            // El abono es demasiado alto, reduce demasiado el plazo
+            maxAbono = abono;
+        } else {
+            // Encontramos exactamente el plazo deseado
+            abonoNecesario = abono;
+            break;
+        }
+        
+        abonoNecesario = abono;
+        intentos++;
+    }
+    
+    // Simulación final para verificar y mostrar resultados
+    var simulacionFinal = calcularAmortizacion(monto, plazoTotal, duraciones, tasas, tbp, margen, abonoNecesario);
+    
+    console.log("Resultado final: Abono=" + abonoNecesario.toFixed(2) + 
+                ", Plazo resultante=" + simulacionFinal.length + " meses");
+    
+    var resultadoCalculo = "Con un abono mensual de " + abonoNecesario.toFixed(2) + 
+        " se reduce el plazo de " + plazoTotal + " a " + simulacionFinal.length + " meses.";
+    
+    document.getElementById("montoAbonoPlazo").value = abonoNecesario.toFixed(2);
+    
+    // Mostramos el resultado del cálculo
+    var resultadoDiv = document.getElementById("resultadoCalculoPlazo");
+    if (resultadoDiv) {
+        resultadoDiv.innerHTML = resultadoCalculo;
+    }
+    
+    // Actualización dinámica - calculamos y mostramos la tabla automáticamente
+    calcular();
+}
+
+/**
+ * Realiza una búsqueda binaria asíncrona
+ * @param {Object} config - Configuración para la búsqueda
+ * @return {Promise} - Promesa que se resuelve con el valor encontrado
+ */
+function busquedaBinariaAsync(config) {
+    const { 
+        evaluarFuncion, 
+        minValor, 
+        maxValor, 
+        precision = 100, 
+        maxIteraciones = 50,
+        fnProgreso = null 
+    } = config;
+    
+    let minActual = minValor;
+    let maxActual = maxValor;
+    let iteracion = 0;
+    let mejorValor = minValor;
+    
+    // Función para reportar progreso
+    const reportarProgreso = (iter, valor) => {
+        if (fnProgreso) {
+            const porcentaje = Math.min(100, Math.round((iter / maxIteraciones) * 100));
+            fnProgreso(`Iteración ${iter}/${maxIteraciones} - Probando valor: ${valor.toFixed(2)}`, porcentaje);
+        }
+    };
+    
+    // Devolver una promesa que resolverá con el valor encontrado
+    return new Promise((resolve, reject) => {
+        // Función que realiza una iteración de la búsqueda binaria
+        function iterarBusqueda() {
+            if (iteracion >= maxIteraciones || (maxActual - minActual) <= precision) {
+                // Condición de terminación: se alcanza la precisión o el máximo de iteraciones
+                if (fnProgreso) fnProgreso("¡Búsqueda completa!", 100);
+                resolve(mejorValor);
+                return;
+            }
+            
+            iteracion++;
+            const valorMedio = (minActual + maxActual) / 2;
+            reportarProgreso(iteracion, valorMedio);
+            
+            // Evaluar el valor medio usando la función proporcionada (asíncrona)
+            evaluarFuncion(valorMedio)
+                .then(resultado => {
+                    if (resultado.esValido) {
+                        // El valor es adecuado, guardarlo como mejor valor actual
+                        mejorValor = valorMedio;
+                        
+                        // Ajustar búsqueda según la dirección
+                        if (resultado.ajustarHacia === 'menor') {
+                            maxActual = valorMedio;
+                        } else {
+                            minActual = valorMedio;
+                        }
+                    } else {
+                        // El valor no es adecuado, ajustar en la dirección indicada
+                        if (resultado.ajustarHacia === 'mayor') {
+                            minActual = valorMedio;
+                        } else {
+                            maxActual = valorMedio;
+                        }
+                    }
+                    
+                    // Programar la siguiente iteración con pequeño retraso para no bloquear
+                    setTimeout(iterarBusqueda, 0);
+                })
+                .catch(error => {
+                    reject(error);
+                });
+        }
+        
+        // Iniciar la primera iteración
+        setTimeout(iterarBusqueda, 0);
+    });
+}
+
+/**
+ * Calcula amortización con reducción de cuota y período limitado de abonos
+ * @param {number} monto - Monto del préstamo
+ * @param {number} plazoTotal - Plazo total en meses
+ * @param {Array} duraciones - Duraciones de las tasas en meses
+ * @param {Array} tasas - Tasas de interés
+ * @param {number} tbp - Tasa básica pasiva
+ * @param {number} margen - Margen del banco
+ * @param {number} montoAbono - Monto de abono extraordinario mensual
+ * @param {number} periodoAbono - Período para aplicar abonos (en meses)
+ * @return {Array} - Tabla de amortización resultante
+ */
+function calcularAmortizacionReducirCuotaConPeriodo(monto, plazoTotal, duraciones, tasas, tbp, margen, montoAbono, periodoAbono) {
+    var saldo = monto;
+    var amortizacion = [];
+    var mesActual = 0;
+    
+    // Acumulador para mes actual global
+    var mesGlobal = 1;
+
+    for (let j = 0; j <= duraciones.length; j++) {
+        let tasaActual = (j < duraciones.length) ? tasas[j] : tbp + margen;
+        let plazo = (j < duraciones.length) ? duraciones[j] : plazoTotal - mesActual;
+        let plazoPendiente = plazoTotal - mesActual;
+
+        // Tasa mensual
+        var tasaMensual = tasaActual / 12;
+        
+        for (let i = 1; i <= plazo; i++) {
+            // Recalcular la cuota en cada paso basado en el saldo actual y el plazo restante
+            var plazoPendienteActual = plazoTotal - (mesGlobal - 1);
+            var cuotaMensual = saldo * (tasaMensual / (1 - Math.pow(1 + tasaMensual, -plazoPendienteActual)));
+            
+            var interes = saldo * tasaMensual;
+            var principal = cuotaMensual - interes;
+
+            if (saldo - principal < 0) {
+                principal = saldo;
+                cuotaMensual = principal + interes;
+            }
+
+            // Aplicar abono extra solo durante el período especificado
+            var abonoExtra = 0;
+            if (montoAbono > 0 && saldo > 0 && mesGlobal <= periodoAbono) {
+                abonoExtra = montoAbono;
+                
+                // Ajuste para el último pago
+                if (saldo - principal - abonoExtra < 0) {
+                    abonoExtra = Math.max(0, saldo - principal);
+                }
+            }
+            
+            // Actualizar saldo
+            saldo -= (principal + abonoExtra);
+            saldo = Math.max(0, saldo); // Garantizar que el saldo no sea negativo
+
+            amortizacion.push({
+                mes: mesGlobal,
+                cuotaMensual: cuotaMensual,
+                interes: interes,
+                principal: principal,
+                abonoExtra: abonoExtra,
+                saldo: saldo,
+                tasa: tasaActual * 100
+            });
+
+            mesGlobal++;
+            
+            if (saldo <= 0) break;
+        }
+
+        mesActual += plazo;
+        if (saldo <= 0) break;
+    }
+
+    return amortizacion;
+}
+
+/**
+ * Evalúa si un abono producirá la cuota objetivo deseada
+ * @param {number} abonoExtra - Abono a evaluar
+ * @param {Object} params - Parámetros de evaluación
+ * @return {Promise} - Promesa que se resuelve con el resultado de evaluación
+ */
+function evaluarAbonoParaCuotaObjetivo(abonoExtra, params) {
+    const { 
+        monto, 
+        plazoTotal, 
+        duraciones, 
+        tasas, 
+        tbp, 
+        margen, 
+        periodoAbono, 
+        cuotaObjetivo 
+    } = params;
+    
+    return new Promise((resolve) => {
+        // Retrasar para no bloquear hilo principal
+        setTimeout(() => {
+            try {
+                // Calcular amortización con el abono propuesto
+                const simulacion = calcularAmortizacionReducirCuotaConPeriodo(
+                    monto, plazoTotal, duraciones, tasas, tbp, margen, abonoExtra, periodoAbono
+                );
+                
+                // Verificar la cuota específicamente en el mes siguiente al período de abonos
+                const mesSiguienteAlPeriodo = periodoAbono + 1;
+                let cuotaDespuesPeriodo = null;
+                
+                // Buscar exactamente el mes siguiente al período de abonos
+                const cuotaMesSiguiente = simulacion.find(item => item.mes === mesSiguienteAlPeriodo);
+                
+                if (cuotaMesSiguiente) {
+                    cuotaDespuesPeriodo = cuotaMesSiguiente.cuotaMensual;
+                } else {
+                    // Si no encontramos el mes específico (quizás el préstamo terminó antes)
+                    // usar la última cuota disponible
+                    if (simulacion.length > 0) {
+                        cuotaDespuesPeriodo = simulacion[simulacion.length - 1].cuotaMensual;
+                    } else {
+                        // Caso extremo, no debería ocurrir
+                        cuotaDespuesPeriodo = 0;
+                    }
+                }
+                
+                // Calcular la diferencia con la cuota objetivo
+                const diferencia = Math.abs(cuotaDespuesPeriodo - cuotaObjetivo);
+                // Usar una tolerancia proporcional a la cuota objetivo (0.5%)
+                const tolerancia = Math.max(1, cuotaObjetivo * 0.005);
+                
+                console.log(`Evaluando abono ${abonoExtra.toFixed(2)}: Cuota después período = ${cuotaDespuesPeriodo.toFixed(2)}, Objetivo = ${cuotaObjetivo.toFixed(2)}, Diferencia = ${diferencia.toFixed(2)}, Tolerancia = ${tolerancia.toFixed(2)}`);
+                
+                // Determinar si este abono es válido y hacia dónde ajustar
+                if (diferencia <= tolerancia) {
+                    // Encontramos una cuota muy cercana a la objetivo
+                    resolve({
+                        esValido: true,
+                        ajustarHacia: 'menor', // Intentar encontrar un abono menor que también funcione
+                        cuotaResultante: cuotaDespuesPeriodo
+                    });
+                } else if (cuotaDespuesPeriodo > cuotaObjetivo) {
+                    // La cuota es mayor a la objetivo, necesitamos incrementar el abono
+                    // para reducir más la cuota
+                    resolve({
+                        esValido: false,
+                        ajustarHacia: 'mayor',
+                        cuotaResultante: cuotaDespuesPeriodo
+                    });
+                } else {
+                    // La cuota es menor a la objetivo, el abono es demasiado alto
+                    // Necesitamos reducir el abono para que la cuota sea mayor
+                    resolve({
+                        esValido: false,
+                        ajustarHacia: 'menor',
+                        cuotaResultante: cuotaDespuesPeriodo
+                    });
+                }
+            } catch (error) {
+                console.error("Error en evaluación:", error);
+                resolve({
+                    esValido: false,
+                    ajustarHacia: 'error',
+                    error: error.message
+                });
+            }
+        }, 0);
+    });
+}
+
+/**
+ * Función principal para calcular el abono necesario para lograr una cuota objetivo
+ */
+function calcularAbonoNecesarioParaCuota() {
+    // Verificar campos requeridos
+    var monto = parseFloat(document.getElementById("monto").value);
+    if (!monto) {
+        alert("Por favor, ingrese el monto del crédito primero.");
+        return;
+    }
+    
+    var plazoTotal = parseInt(document.getElementById("plazo").value) * 12;
+    if (!plazoTotal) {
+        alert("Por favor, ingrese el plazo del crédito primero.");
+        return;
+    }
+    
+    var periodoAbono = parseInt(document.getElementById("periodoAbono").value) || 12;
+    if (periodoAbono <= 0 || periodoAbono >= plazoTotal) {
+        alert(`El período de abono debe estar entre 1 y ${plazoTotal-1} meses.`);
+        return;
+    }
+    
+    var cuotaObjetivo = parseFloat(document.getElementById("cuotaObjetivo").value);
+    if (!cuotaObjetivo || cuotaObjetivo <= 0) {
+        alert("Por favor, ingrese una cuota objetivo válida.");
+        return;
+    }
+    
+    // Obtener todas las duraciones y tasas
+    var duraciones = Array.from(document.getElementsByClassName("duracion")).map(input => parseInt(input.value));
+    var tasas = Array.from(document.getElementsByClassName("tasa")).map(input => parseFloat(input.value) / 100);
+    
+    if (duraciones.length === 0 || tasas.length === 0 || duraciones.includes(NaN) || tasas.includes(NaN)) {
+        alert("Por favor, complete todas las tasas de interés.");
+        return;
+    }
+    
+    var tbp = parseFloat(document.getElementById("tbp").value) / 100;
+    var margen = parseFloat(document.getElementById("margen").value) / 100;
+    
+    if (isNaN(tbp) || isNaN(margen)) {
+        alert("Por favor, ingrese los valores de TBP y Margen.");
+        return;
+    }
+    
+    // Calcular la cuota original (sin abonos) para tener referencia
+    const tasaInicial = (duraciones.length > 0) ? tasas[0] : (tbp + margen);
+    const tasaMensualInicial = tasaInicial / 12;
+    const cuotaOriginal = monto * (tasaMensualInicial / (1 - Math.pow(1 + tasaMensualInicial, -plazoTotal)));
+    
+    // Validar que la cuota objetivo sea menor que la original
+    if (cuotaObjetivo >= cuotaOriginal) {
+        alert(`La cuota objetivo (${cuotaObjetivo.toFixed(2)}) debe ser menor que la cuota original (${cuotaOriginal.toFixed(2)})`);
+        return;
+    }
+    
+    // Configuración para la búsqueda binaria
+    const params = {
+        monto: monto,
+        plazoTotal: plazoTotal,
+        duraciones: duraciones,
+        tasas: tasas,
+        tbp: tbp,
+        margen: margen,
+        periodoAbono: periodoAbono,
+        cuotaObjetivo: cuotaObjetivo
+    };
+    
+    // Calcular un rango razonable para la búsqueda binaria
+    const diferenciaCuota = cuotaOriginal - cuotaObjetivo;
+    // Aumentamos el rango para asegurar que se encuentre la solución
+    const minAbono = Math.max(1000, diferenciaCuota * 0.1); // Valor mínimo razonable
+    const maxAbono = Math.min(monto * 0.9, diferenciaCuota * 10); // Valor máximo razonable
+    
+    // Mostrar indicador de progreso
+    var progresoElement = document.getElementById("progresoCalculo");
+    var barraProgreso = document.getElementById("progressBar");
+    var estadoCalculo = document.getElementById("estadoCalculo");
+    
+    if (progresoElement && barraProgreso && estadoCalculo) {
+        progresoElement.style.display = "block";
+        barraProgreso.style.width = "0%";
+        estadoCalculo.textContent = "Iniciando cálculo...";
+    }
+    
+    // Función para actualizar progreso
+    const actualizarProgreso = (mensaje, porcentaje) => {
+        if (barraProgreso && estadoCalculo) {
+            barraProgreso.style.width = porcentaje + "%";
+            estadoCalculo.textContent = mensaje;
+        }
+    };
+    
+    console.log(`Iniciando búsqueda con rango: ${minAbono.toFixed(2)} - ${maxAbono.toFixed(2)}`);
+    
+    // Configurar la búsqueda binaria
+    const configBusqueda = {
+        evaluarFuncion: (abono) => evaluarAbonoParaCuotaObjetivo(abono, params),
+        minValor: minAbono,
+        maxValor: maxAbono,
+        precision: Math.max(10, cuotaObjetivo * 0.001), // Precisión proporcional a la cuota objetivo
+        maxIteraciones: 30, // Aumentamos el número de iteraciones
+        fnProgreso: actualizarProgreso
+    };
+    
+    // Iniciar búsqueda binaria asíncrona
+    busquedaBinariaAsync(configBusqueda)
+        .then(abonoNecesario => {
+            // Verificar el resultado con una simulación final
+            evaluarAbonoParaCuotaObjetivo(abonoNecesario, params)
+                .then(resultadoFinal => {
+                    // Mostrar el resultado
+                    document.getElementById("montoAbonoCuota").value = abonoNecesario.toFixed(2);
+                    
+                    // Mostrar información detallada del resultado
+                    var mensaje = `
+                        <strong>Resultado del cálculo:</strong><br>
+                        Con un abono extraordinario mensual de ${abonoNecesario.toFixed(2)} durante ${periodoAbono} meses,
+                        la cuota mensual se reducirá de ${cuotaOriginal.toFixed(2)} a aproximadamente ${resultadoFinal.cuotaResultante.toFixed(2)}
+                        a partir del mes ${periodoAbono + 1}.<br>
+                        <small>(Diferencia con objetivo: ${Math.abs(resultadoFinal.cuotaResultante - cuotaObjetivo).toFixed(2)})</small>
+                    `;
+                    
+                    var resultadoDiv = document.getElementById("resultadoCalculoAbonoParaCuota");
+                    if (resultadoDiv) {
+                        resultadoDiv.innerHTML = mensaje;
+                        resultadoDiv.style.display = "block";
+                    }
+                    
+                    // Ocultar progreso
+                    if (progresoElement) {
+                        progresoElement.style.display = "none";
+                    }
+                    
+                    // Actualizar simulación automáticamente
+                    simularReduccionCuota();
+                });
+        })
+        .catch(error => {
+            alert("Error en el cálculo: " + error.message);
+            
+            // Ocultar progreso
+            if (progresoElement) {
+                progresoElement.style.display = "none";
+            }
+        });
+}
+
+// Función para simular la reducción de cuota
+function simularReduccionCuota() {
+    var montoAbono = parseFloat(document.getElementById("montoAbonoCuota").value);
+    if (!montoAbono || montoAbono <= 0) {
+        alert("Por favor, ingrese un monto de abono válido.");
+        return;
+    }
+    
+    // Validamos que tengamos la información básica del crédito
+    var monto = parseFloat(document.getElementById("monto").value);
+    if (!monto) {
+        alert("Por favor, ingrese el monto del crédito primero.");
+        return;
+    }
+    
+    var plazoTotal = parseInt(document.getElementById("plazo").value) * 12;
+    if (!plazoTotal) {
+        alert("Por favor, ingrese el plazo del crédito primero.");
+        return;
+    }
+    
+    // Obtener período de abono
+    var periodoAbono = parseInt(document.getElementById("periodoAbono").value) || plazoTotal;
+    if (periodoAbono <= 0 || periodoAbono > plazoTotal) {
+        periodoAbono = plazoTotal;
+    }
+    
+    // Obtenemos las tasas necesarias
+    var duraciones = Array.from(document.getElementsByClassName("duracion")).map(input => parseInt(input.value));
+    var tasas = Array.from(document.getElementsByClassName("tasa")).map(input => parseFloat(input.value) / 100);
+    
+    if (duraciones.length === 0 || tasas.length === 0 || duraciones.includes(NaN) || tasas.includes(NaN)) {
+        alert("Por favor, complete todas las tasas de interés.");
+        return;
+    }
+    
+    var tbp = parseFloat(document.getElementById("tbp").value) / 100;
+    var margen = parseFloat(document.getElementById("margen").value) / 100;
+    
+    if (isNaN(tbp) || isNaN(margen)) {
+        alert("Por favor, ingrese los valores de TBP y Margen.");
+        return;
+    }
+    
+    // Calculamos las opciones originales (sin abonos)
+    var amortizacionOriginal = calcularAmortizacion(monto, plazoTotal, duraciones, tasas, tbp, margen, 0);
+    var cuotaOriginal = amortizacionOriginal[0].cuotaMensual;
+    
+    // Calculamos la amortización con los abonos para reducir cuota usando el período limitado
+    var amortizacionReducida = calcularAmortizacionReducirCuotaConPeriodo(
+        monto, plazoTotal, duraciones, tasas, tbp, margen, montoAbono, periodoAbono
+    );
+    
+    // Obtener la cuota después del período de abonos
+    let cuotaDespuesPeriodo = null;
+    const mesSiguienteAlPeriodo = periodoAbono + 1;
+    
+    // Buscar exactamente el mes siguiente al período de abonos
+    const cuotaMesSiguiente = amortizacionReducida.find(item => item.mes === mesSiguienteAlPeriodo);
+    
+    if (cuotaMesSiguiente) {
+        cuotaDespuesPeriodo = cuotaMesSiguiente.cuotaMensual;
+    } else if (amortizacionReducida.length > 0) {
+        // Si no encontramos el mes específico, usar la última cuota disponible
+        cuotaDespuesPeriodo = amortizacionReducida[amortizacionReducida.length - 1].cuotaMensual;
+    } else {
+        cuotaDespuesPeriodo = 0;
+    }
+    
+    var ahorroMensual = cuotaOriginal - cuotaDespuesPeriodo;
+    
+    // Mostrar los resultados
+    var resultadoDiv = document.getElementById("resultadoCalculoCuota");
+    if (resultadoDiv) {
+        resultadoDiv.innerHTML = `
+            Con un abono mensual de ${montoAbono.toFixed(2)} durante ${periodoAbono} meses, 
+            la cuota se reduce de ${cuotaOriginal.toFixed(2)} 
+            a ${cuotaDespuesPeriodo.toFixed(2)}, ahorrando ${ahorroMensual.toFixed(2)} por mes
+            a partir del mes ${periodoAbono + 1}.
+        `;
+        resultadoDiv.style.display = "block";
+    }
+    
+    // Actualizar las tablas
+    calcular();
+}
+
+// NUEVO: Evaluación para modo mixto - fase 2 (reducción de plazo)
+/**
+ * Evalúa si un abono en la fase 2 producirá el plazo total deseado
+ * @param {number} abono2 - Abono de fase 2 a evaluar
+ * @param {Object} params - Parámetros de evaluación
+ * @return {Promise} - Promesa que se resuelve con el resultado de evaluación
+ */
+function evaluarAbonoFase2ParaPlazo(abono2, params) {
+    const {
+        saldoDespuesFase1,
+        plazoRestante,
+        duraciones,
+        tasas,
+        tbp,
+        margen,
+        cuotaReducida,
+        plazoDeseadoTotal,
+        periodoFase1
+    } = params;
+    
+    return new Promise((resolve) => {
+        setTimeout(() => {
+            try {
+                // Calcular amortización con este abono para fase 2
+                const fase2 = calcularAmortizacionModoMixtoFase2(
+                    saldoDespuesFase1, plazoRestante, duraciones, tasas, tbp, margen, 
+                    abono2, cuotaReducida, periodoFase1
+                );
+                
+                // El plazo total es el período de la fase 1 + longitud de fase 2
+                const plazoTotal = periodoFase1 + fase2.length;
+                const diferencia = Math.abs(plazoTotal - plazoDeseadoTotal);
+                
+                console.log(`Evaluando abono fase 2: ${abono2.toFixed(2)}, Plazo resultante: ${plazoTotal}, Deseado: ${plazoDeseadoTotal}, Diferencia: ${diferencia}`);
+                
+                // Tolerancia de 1 mes para considerar válido
+                if (diferencia <= 1) {
+                    resolve({
+                        esValido: true,
+                        ajustarHacia: 'menor', // Intentar encontrar un abono menor también válido
+                        plazoResultante: plazoTotal
+                    });
+                } else if (plazoTotal > plazoDeseadoTotal) {
+                    // Plazo muy largo, aumentar abono para reducirlo
+                    resolve({
+                        esValido: false,
+                        ajustarHacia: 'mayor',
+                        plazoResultante: plazoTotal
+                    });
+                } else {
+                    // Plazo muy corto, reducir abono para alargarlo
+                    resolve({
+                        esValido: false,
+                        ajustarHacia: 'menor',
+                        plazoResultante: plazoTotal
+                    });
+                }
+            } catch (error) {
+                console.error("Error en evaluación fase 2:", error);
+                resolve({
+                    esValido: false,
+                    ajustarHacia: 'error',
+                    error: error.message
+                });
+            }
+        }, 0);
+    });
+}
+
+/**
+ * Calcula amortización para la fase 2 del modo mixto (cuota fija reducida + abonos)
+ * @param {number} saldoInicial - Saldo después de fase 1
+ * @param {number} plazoRestante - Plazo restante en meses
+ * @param {Array} duraciones - Duraciones de las tasas en meses
+ * @param {Array} tasas - Tasas de interés
+ * @param {number} tbp - Tasa básica pasiva
+ * @param {number} margen - Margen del banco
+ * @param {number} abono2 - Monto de abono extraordinario para fase 2
+ * @param {number} cuotaReducida - Cuota fija reducida después de fase 1
+ * @param {number} offsetMes - Mes inicial (después de fase 1)
+ * @return {Array} - Tabla de amortización de fase 2
+ */
+function calcularAmortizacionModoMixtoFase2(saldoInicial, plazoRestante, duraciones, tasas, tbp, margen, abono2, cuotaReducida, offsetMes) {
+    var saldo = saldoInicial;
+    var amortizacion = [];
+    var mesActual = 0;
+    
+    // Mes global comienza después de la fase 1
+    var mesGlobal = offsetMes + 1;
+    
+    for (let j = 0; j <= duraciones.length; j++) {
+        let tasaActual = (j < duraciones.length) ? tasas[j] : tbp + margen;
+        let plazo = (j < duraciones.length) ? duraciones[j] : plazoRestante - mesActual;
+        
+        // Tasa mensual
+        var tasaMensual = tasaActual / 12;
+        
+        for (let i = 1; i <= plazo; i++) {
+            // Usar la cuota reducida fija (no recalcular)
+            var cuotaMensual = cuotaReducida;
+            
+            var interes = saldo * tasaMensual;
+            var principal = cuotaMensual - interes;
+            
+            // Si la cuota no cubre los intereses, ajustar
+            if (principal < 0) {
+                principal = 0;
+                cuotaMensual = interes;
+            }
+            
+            if (saldo - principal < 0) {
+                principal = saldo;
+                cuotaMensual = principal + interes;
+            }
+            
+            // Aplicar abono extra para reducir plazo
+            var abonoExtra = 0;
+            if (abono2 > 0 && saldo > 0) {
+                abonoExtra = abono2;
+                
+                // Ajuste para el último pago
+                if (saldo - principal - abonoExtra < 0) {
+                    abonoExtra = Math.max(0, saldo - principal);
+                }
+            }
+            
+            // Actualizar saldo
+            saldo -= (principal + abonoExtra);
+            saldo = Math.max(0, saldo); // Garantizar que el saldo no sea negativo
+            
+            amortizacion.push({
+                mes: mesGlobal,
+                cuotaMensual: cuotaMensual,
+                interes: interes,
+                principal: principal,
+                abonoExtra: abonoExtra,
+                saldo: saldo,
+                tasa: tasaActual * 100
+            });
+            
+            mesGlobal++;
+            
+            if (saldo <= 0) break;
+        }
+        
+        mesActual += plazo;
+        if (saldo <= 0) break;
+    }
+    
+    return amortizacion;
+}
+
+/**
+ * Función principal para calcular el modo mixto (reducción de cuota + plazo)
+ */
+function calcularAbonoMixto() {
+    // Verificar campos requeridos
+    var monto = parseFloat(document.getElementById("monto").value);
+    if (!monto) {
+        alert("Por favor, ingrese el monto del crédito primero.");
+        return;
+    }
+    
+    var plazoTotal = parseInt(document.getElementById("plazo").value) * 12;
+    if (!plazoTotal) {
+        alert("Por favor, ingrese el plazo del crédito primero.");
+        return;
+    }
+    
+    var periodoAbonoMixto = parseInt(document.getElementById("periodoAbonoMixto").value) || 12;
+    if (periodoAbonoMixto <= 0 || periodoAbonoMixto >= plazoTotal) {
+        alert(`El período de abono debe estar entre 1 y ${plazoTotal-1} meses.`);
+        return;
+    }
+    
+    var cuotaObjetivoMixto = parseFloat(document.getElementById("cuotaObjetivoMixto").value);
+    if (!cuotaObjetivoMixto || cuotaObjetivoMixto <= 0) {
+        alert("Por favor, ingrese una cuota objetivo válida.");
+        return;
+    }
+    
+    var plazoDeseadoMixto = parseInt(document.getElementById("plazoDeseadoMixto").value) * 12;
+    if (!plazoDeseadoMixto || plazoDeseadoMixto <= 0) {
+        alert("Por favor, ingrese un plazo deseado válido.");
+        return;
+    }
+    
+    if (plazoDeseadoMixto >= plazoTotal) {
+        alert("El plazo deseado debe ser menor que el plazo original (" + plazoTotal + " meses).");
+        return;
+    }
+    
+    // Obtener todas las duraciones y tasas
+    var duraciones = Array.from(document.getElementsByClassName("duracion")).map(input => parseInt(input.value));
+    var tasas = Array.from(document.getElementsByClassName("tasa")).map(input => parseFloat(input.value) / 100);
+    
+    if (duraciones.length === 0 || tasas.length === 0 || duraciones.includes(NaN) || tasas.includes(NaN)) {
+        alert("Por favor, complete todas las tasas de interés.");
+        return;
+    }
+    
+    var tbp = parseFloat(document.getElementById("tbp").value) / 100;
+    var margen = parseFloat(document.getElementById("margen").value) / 100;
+    
+    if (isNaN(tbp) || isNaN(margen)) {
+        alert("Por favor, ingrese los valores de TBP y Margen.");
+        return;
+    }
+    
+    // Mostrar indicador de progreso
+    var progresoElement = document.getElementById("progresoCalculoMixto");
+    var barraProgreso = document.getElementById("progressBarMixto");
+    var estadoCalculo = document.getElementById("estadoCalculoMixto");
+    
+    if (progresoElement && barraProgreso && estadoCalculo) {
+        progresoElement.style.display = "block";
+        barraProgreso.style.width = "0%";
+        estadoCalculo.textContent = "Fase 1: Calculando abono para reducir cuota...";
+    }
+    
+    // Función para actualizar progreso
+    const actualizarProgreso = (mensaje, porcentaje) => {
+        if (barraProgreso && estadoCalculo) {
+            barraProgreso.style.width = porcentaje + "%";
+            estadoCalculo.textContent = mensaje;
+        }
+    };
+    
+    // Calcular la cuota original (sin abonos) para tener referencia
+    const tasaInicial = (duraciones.length > 0) ? tasas[0] : (tbp + margen);
+    const tasaMensualInicial = tasaInicial / 12;
+    const cuotaOriginal = monto * (tasaMensualInicial / (1 - Math.pow(1 + tasaMensualInicial, -plazoTotal)));
+    
+    // Validar que la cuota objetivo sea menor que la original
+    if (cuotaObjetivoMixto >= cuotaOriginal) {
+        alert(`La cuota objetivo (${cuotaObjetivoMixto.toFixed(2)}) debe ser menor que la cuota original (${cuotaOriginal.toFixed(2)})`);
+        return;
+    }
+    
+    // FASE 1: Calcular abono necesario para lograr la cuota objetivo
+    // Configuración para la búsqueda binaria de la fase 1
+    const paramsFase1 = {
+        monto: monto,
+        plazoTotal: plazoTotal,
+        duraciones: duraciones,
+        tasas: tasas,
+        tbp: tbp,
+        margen: margen,
+        periodoAbono: periodoAbonoMixto,
+        cuotaObjetivo: cuotaObjetivoMixto
+    };
+    
+    // Calcular un rango razonable para la búsqueda binaria
+    const diferenciaCuota = cuotaOriginal - cuotaObjetivoMixto;
+    const minAbono1 = Math.max(1000, diferenciaCuota * 0.1); // Valor mínimo razonable
+    const maxAbono1 = Math.min(monto * 0.9, diferenciaCuota * 10); // Valor máximo razonable
+    
+    // Configurar la búsqueda binaria para la fase 1
+    const configBusquedaFase1 = {
+        evaluarFuncion: (abono) => evaluarAbonoParaCuotaObjetivo(abono, paramsFase1),
+        minValor: minAbono1,
+        maxValor: maxAbono1,
+        precision: Math.max(10, cuotaObjetivoMixto * 0.001), // Precisión proporcional a la cuota objetivo
+        maxIteraciones: 20, // Número de iteraciones para fase 1
+        fnProgreso: (mensaje, porcentaje) => {
+            actualizarProgreso(`Fase 1: ${mensaje}`, porcentaje * 0.5); // 50% del progreso total
+        }
+    };
+    
+    // Iniciar búsqueda binaria asíncrona para la fase 1
+    busquedaBinariaAsync(configBusquedaFase1)
+        .then(abono1 => {
+            // Verificar el resultado con una simulación
+            evaluarAbonoParaCuotaObjetivo(abono1, paramsFase1)
+                .then(resultadoFase1 => {
+                    actualizarProgreso("Fase 1 completada. Iniciando fase 2...", 50);
+                    
+                    // FASE 2: Calcular el saldo restante después de la primera fase
+                    // Simular la reducción de cuota para obtener el saldo después del período
+                    const simulacionFase1 = calcularAmortizacionReducirCuotaConPeriodo(
+                        monto, plazoTotal, duraciones, tasas, tbp, margen, abono1, periodoAbonoMixto
+                    );
+                    
+                    // Obtener el saldo al final del período de la fase 1
+                    let saldoDespuesFase1 = 0;
+                    if (simulacionFase1.length >= periodoAbonoMixto) {
+                        saldoDespuesFase1 = simulacionFase1[periodoAbonoMixto - 1].saldo;
+                    } else {
+                        // Si el préstamo se pagó antes del fin de la fase 1
+                        saldoDespuesFase1 = 0;
+                    }
+                    
+                    // Si el saldo es 0, no se necesita fase 2
+                    if (saldoDespuesFase1 <= 0) {
+                        const mensaje = `
+                            <strong>Resultado del cálculo:</strong><br>
+                            <u>Fase 1:</u> Con un abono extraordinario mensual de ${abono1.toFixed(2)} durante ${periodoAbonoMixto} meses,
+                            la cuota mensual se reducirá de ${cuotaOriginal.toFixed(2)} a aproximadamente ${resultadoFase1.cuotaResultante.toFixed(2)}.<br>
+                            <u>Fase 2:</u> No es necesaria ya que el crédito se pagará completamente durante la fase 1.
+                        `;
+                        
+                        var resultadoDiv = document.getElementById("resultadoCalculoMixto");
+                        if (resultadoDiv) {
+                            resultadoDiv.innerHTML = mensaje;
+                            resultadoDiv.classList.add('active');
+                        }
+                        
+                        // Ocultar progreso
+                        if (progresoElement) {
+                            progresoElement.style.display = "none";
+                        }
+                        
+                        // Guardar los resultados para la simulación
+                        window.abono1Mixto = abono1;
+                        window.abono2Mixto = 0;
+                        window.periodoMixto = periodoAbonoMixto;
+                        window.cuotaObjetivoFase2 = resultadoFase1.cuotaResultante;
+                        
+                        // Actualizar simulación
+                        calcular();
+                        
+                        return;
+                    }
+                    
+                    // Calcular el plazo restante después de la fase 1
+                    const plazoRestante = plazoTotal - periodoAbonoMixto;
+                    
+                    // La cuota objetivo para la fase 2 es la resultante de la fase 1
+                    const cuotaReducida = resultadoFase1.cuotaResultante;
+                    
+                    // FASE 2: Configuración para la búsqueda binaria
+                    const paramsFase2 = {
+                        saldoDespuesFase1: saldoDespuesFase1,
+                        plazoRestante: plazoRestante,
+                        duraciones: duraciones,
+                        tasas: tasas,
+                        tbp: tbp,
+                        margen: margen,
+                        cuotaReducida: cuotaReducida,
+                        plazoDeseadoTotal: plazoDeseadoMixto,
+                        periodoFase1: periodoAbonoMixto
+                    };
+                    
+                    // Calcular un rango razonable para la búsqueda binaria de la fase 2
+                    const minAbono2 = 1000; // Valor mínimo razonable
+                    const maxAbono2 = Math.min(saldoDespuesFase1 * 0.5, cuotaReducida * 3); // Valor máximo razonable
+                    
+                    // Configurar la búsqueda binaria para la fase 2
+                    const configBusquedaFase2 = {
+                        evaluarFuncion: (abono) => evaluarAbonoFase2ParaPlazo(abono, paramsFase2),
+                        minValor: minAbono2,
+                        maxValor: maxAbono2,
+                        precision: 100, // Precisión en unidades monetarias
+                        maxIteraciones: 20, // Número de iteraciones
+                        fnProgreso: (mensaje, porcentaje) => {
+                            actualizarProgreso(`Fase 2: ${mensaje}`, 50 + porcentaje * 0.5); // Del 50% al 100%
+                        }
+                    };
+                    
+                    // Iniciar búsqueda binaria asíncrona para la fase 2
+                    busquedaBinariaAsync(configBusquedaFase2)
+                        .then(abono2 => {
+                            // Verificar el resultado con una simulación final
+                            evaluarAbonoFase2ParaPlazo(abono2, paramsFase2)
+                                .then(resultadoFase2 => {
+                                    // Mostrar los resultados finales
+                                    const mensaje = `
+                                        <strong>Resultado del cálculo:</strong><br>
+                                        <u>Fase 1:</u> Con un abono extraordinario mensual de ${abono1.toFixed(2)} durante ${periodoAbonoMixto} meses,
+                                        la cuota mensual se reducirá de ${cuotaOriginal.toFixed(2)} a aproximadamente ${resultadoFase1.cuotaResultante.toFixed(2)}.<br>
+                                        <u>Fase 2:</u> Con un abono extraordinario mensual de ${abono2.toFixed(2)} a partir del mes ${periodoAbonoMixto + 1},
+                                        el crédito se terminará de pagar en aproximadamente ${resultadoFase2.plazoResultante} meses (${(resultadoFase2.plazoResultante/12).toFixed(1)} años).
+                                    `;
+                                    
+                                    var resultadoDiv = document.getElementById("resultadoCalculoMixto");
+                                    if (resultadoDiv) {
+                                        resultadoDiv.innerHTML = mensaje;
+                                        resultadoDiv.classList.add('active');
+                                    }
+                                    
+                                    // Ocultar progreso
+                                    if (progresoElement) {
+                                        progresoElement.style.display = "none";
+                                    }
+                                    
+                                    // Guardar los resultados para la simulación
+                                    window.abono1Mixto = abono1;
+                                    window.abono2Mixto = abono2;
+                                    window.periodoMixto = periodoAbonoMixto;
+                                    window.cuotaObjetivoFase2 = resultadoFase1.cuotaResultante;
+                                    
+                                    // Actualizar simulación
+                                    calcular();
+                                });
+                        })
+                        .catch(error => {
+                            alert("Error en el cálculo de la fase 2: " + error.message);
+                            
+                            // Ocultar progreso
+                            if (progresoElement) {
+                                progresoElement.style.display = "none";
+                            }
+                        });
+                });
+        })
+        .catch(error => {
+            alert("Error en el cálculo de la fase 1: " + error.message);
+            
+            // Ocultar progreso
+            if (progresoElement) {
+                progresoElement.style.display = "none";
+            }
+        });
+}
+
+/**
+ * Calcula amortización con modo mixto combinando fase 1 y fase 2
+ * @param {number} monto - Monto del préstamo
+ * @param {number} plazoTotal - Plazo total en meses
+ * @param {Array} duraciones - Duraciones de las tasas en meses
+ * @param {Array} tasas - Tasas de interés
+ * @param {number} tbp - Tasa básica pasiva
+ * @param {number} margen - Margen del banco
+ * @param {number} abono1 - Monto de abono extraordinario para fase 1
+ * @param {number} abono2 - Monto de abono extraordinario para fase 2
+ * @param {number} periodoMixto - Período para aplicar abono1 (en meses)
+ * @param {number} cuotaObjetivo - Cuota objetivo después de fase 1
+ * @return {Array} - Tabla de amortización completa
+ */
+function calcularAmortizacionModoMixto(monto, plazoTotal, duraciones, tasas, tbp, margen, abono1, abono2, periodoMixto, cuotaObjetivo) {
+    // Fase 1: Calcular con reducción de cuota (periodoMixto meses)
+    const fase1 = calcularAmortizacionReducirCuotaConPeriodo(
+        monto, plazoTotal, duraciones, tasas, tbp, margen, abono1, periodoMixto
+    );
+    
+    // Verificar si el préstamo se pagó completamente en la fase 1
+    if (fase1.length <= periodoMixto || fase1[periodoMixto - 1].saldo <= 0) {
+        return fase1;
+    }
+    
+    // Obtener el saldo al final de la fase 1
+    const saldoDespuesFase1 = fase1[periodoMixto - 1].saldo;
+    
+    // Fase 2: Calcular con cuota fija reducida y abonos para reducir plazo
+    const plazoRestante = plazoTotal - periodoMixto;
+    const fase2 = calcularAmortizacionModoMixtoFase2(
+        saldoDespuesFase1, plazoRestante, duraciones, tasas, tbp, margen, 
+        abono2, cuotaObjetivo, periodoMixto
+    );
+    
+    // Combinar fase 1 y fase 2
+    return fase1.slice(0, periodoMixto).concat(fase2);
+}
+// Función para actualizar la tabla de desglose
+function actualizarTablaDesglose(datos, monedaSeleccionada) {
+    var cuotasUnicas = [...new Set(datos.map(item => item.cuotaMensual.toFixed(2)))];
+
+    var tablaDesglose = document.getElementById("tablaDesglose").getElementsByTagName("tbody")[0];
+    tablaDesglose.innerHTML = "";
+    
+    var mesInicio = 1;
+    cuotasUnicas.forEach(function(cuotaStr, index) {
+        var cuota = parseFloat(cuotaStr);
+        var nuevaFila = tablaDesglose.insertRow(tablaDesglose.rows.length);
+        var celda = nuevaFila.insertCell(0);
+
+        if (cuotasUnicas.length === 1) {
+            celda.appendChild(document.createTextNode("Tasa Fija"));
+        } else {
+            // Encontrar el rango de meses para esta cuota
+            var mesesConEstaCuota = datos
+                .filter(item => item.cuotaMensual.toFixed(2) === cuotaStr)
+                .map(item => item.mes);
+            
+            if (mesesConEstaCuota.length > 0) {
+                var mesInicio = Math.min(...mesesConEstaCuota);
+                var mesFin = Math.max(...mesesConEstaCuota);
+                celda.appendChild(document.createTextNode("Del mes " + mesInicio + " al " + mesFin));
+            } else {
+                celda.appendChild(document.createTextNode("Error: No se encontraron meses para esta cuota"));
+            }
+        }
+        
+        celda = nuevaFila.insertCell(1);
+        celda.appendChild(document.createTextNode(formatoMoneda(cuota, monedaSeleccionada)));
+        
+        // Buscar la tasa para esta cuota
+        var itemConEstaCuota = datos.find(item => item.cuotaMensual.toFixed(2) === cuotaStr);
+        if (itemConEstaCuota) {
+            var tasa = itemConEstaCuota.tasa;
+            celda = nuevaFila.insertCell(2);
+            celda.appendChild(document.createTextNode(tasa.toFixed(2) + "%"));
+        } else {
+            celda = nuevaFila.insertCell(2);
+            celda.appendChild(document.createTextNode("N/A"));
+        }
+    });
+}
+
+// Función para actualizar la tabla de amortización
+function actualizarTablaAmortizacion(datos, monedaSeleccionada) {
+    var tablaAmortizacion = document.getElementById("tablaAmortizacion").getElementsByTagName("tbody")[0];
+    tablaAmortizacion.innerHTML = "";
+
+    datos.forEach(function(fila, index) {
+        var nuevaFila = tablaAmortizacion.insertRow(tablaAmortizacion.rows.length);
+        
+        var celda = nuevaFila.insertCell(0);
+        celda.appendChild(document.createTextNode(index + 1));
+        
+        celda = nuevaFila.insertCell(1);
+        celda.appendChild(document.createTextNode(formatoMoneda(fila.cuotaMensual, monedaSeleccionada)));
+        
+        celda = nuevaFila.insertCell(2);
+        celda.appendChild(document.createTextNode(formatoMoneda(fila.interes, monedaSeleccionada)));
+        
+        celda = nuevaFila.insertCell(3);
+        celda.appendChild(document.createTextNode(formatoMoneda(fila.principal, monedaSeleccionada)));
+        
+        celda = nuevaFila.insertCell(4);
+        celda.appendChild(document.createTextNode(formatoMoneda(fila.abonoExtra || 0, monedaSeleccionada)));
+        if (fila.abonoExtra > 0) {
+            celda.classList.add('abono-extra-col');
+        }
+        
+        celda = nuevaFila.insertCell(5);
+        celda.appendChild(document.createTextNode(formatoMoneda(fila.saldo, monedaSeleccionada)));
+    });
+}
+
+// Función para actualizar el gráfico
+// Función para actualizar el gráfico
+function actualizarGrafico(datos, datosOriginales, aplicarAbonos, tipoAbono, monedaSeleccionada) {
+    if (chart) {
+        chart.destroy();
+    }
+
+    // Extract data needed for charts
+    var meses = datos.map(item => item.mes);
+    var cuotas = datos.map(item => item.cuotaMensual);
+    var intereses = datos.map(item => item.interes);
+    var principal = datos.map(item => item.principal);
+    var abonos = datos.map(item => item.abonoExtra || 0);
+    var saldos = datos.map(item => item.saldo);
+    
+    // Calculate accumulated values for interest and principal
+    var interesAcumulado = [];
+    var principalAcumulado = [];
+    var acumInteres = 0;
+    var acumPrincipal = 0;
+    
+    datos.forEach(item => {
+        acumInteres += item.interes;
+        acumPrincipal += item.principal;
+        interesAcumulado.push(acumInteres);
+        principalAcumulado.push(acumPrincipal);
+    });
+    
+    // Create dataset for current loan status
+    var datasets = [
+        {
+            label: 'Saldo del préstamo',
+            data: saldos,
+            borderColor: '#0047AB', // Navy blue
+            backgroundColor: 'rgba(0, 71, 171, 0.1)',
+            fill: true,
+            tension: 0.4,
+            borderWidth: 3,
+            yAxisID: 'y'
+        },
+        {
+            label: 'Interés pagado',
+            data: interesAcumulado,
+            borderColor: '#4CAF50', // Green
+            backgroundColor: 'rgba(76, 175, 80, 0.1)',
+            fill: true,
+            tension: 0.4,
+            borderWidth: 3,
+            yAxisID: 'y'
+        },
+        {
+            label: 'Principal pagado',
+            data: principalAcumulado,
+            borderColor: '#2196F3', // Blue
+            backgroundColor: 'rgba(33, 150, 243, 0.1)',
+            fill: true,
+            tension: 0.4,
+            borderWidth: 3,
+            yAxisID: 'y'
+        }
+    ];
+    
+    // Add original loan data for comparison if abonos are applied
+    if (aplicarAbonos && datosOriginales && datosOriginales.length > 0) {
+        // Calculate accumulated values for original loan
+        var interesAcumuladoOriginal = [];
+        var principalAcumuladoOriginal = [];
+        var acumInteresOriginal = 0;
+        var acumPrincipalOriginal = 0;
+        
+        datosOriginales.forEach(item => {
+            acumInteresOriginal += item.interes;
+            acumPrincipalOriginal += item.principal;
+            interesAcumuladoOriginal.push(acumInteresOriginal);
+            principalAcumuladoOriginal.push(acumPrincipalOriginal);
+        });
+        
+        // Add original loan balance for comparison
+        datasets.push({
+            label: 'Saldo sin abonos',
+            data: datosOriginales.map(item => item.saldo),
+            borderColor: 'rgba(0, 71, 171, 0.5)', // Light navy
+            borderDash: [5, 5],
+            fill: false,
+            tension: 0.4,
+            borderWidth: 2,
+            yAxisID: 'y'
+        });
+        
+        // Agregar comparación para principal pagado
+        datasets.push({
+            label: 'Principal pagado sin abonos',
+            data: principalAcumuladoOriginal,
+            borderColor: 'rgba(33, 150, 243, 0.5)', // Light blue
+            borderDash: [5, 5],
+            fill: false,
+            tension: 0.4,
+            borderWidth: 2,
+            yAxisID: 'y'
+        });
+        
+        // Agregar comparación para interés pagado
+        datasets.push({
+            label: 'Interés pagado sin abonos',
+            data: interesAcumuladoOriginal,
+            borderColor: 'rgba(76, 175, 80, 0.5)', // Light green
+            borderDash: [5, 5],
+            fill: false,
+            tension: 0.4,
+            borderWidth: 2,
+            yAxisID: 'y'
+        });
+        
+        // Añadir clase para aumentar el tamaño cuando hay comparación
+        const chartContainer = document.querySelector('.grafico-fullscreen');
+        if (chartContainer) {
+            chartContainer.classList.add('with-comparison');
+        }
+    } else {
+        // Remover clase si no hay comparación
+        const chartContainer = document.querySelector('.grafico-fullscreen');
+        if (chartContainer) {
+            chartContainer.classList.remove('with-comparison');
+        }
+    }
+
+    // Create chart context
+    var ctx = document.getElementById('amortizacionChart').getContext('2d');
+    
+    // Custom plugin for vertical line and points
+    const tooltipPlugin = {
+        id: 'customVerticalLine',
+        afterDraw: (chart) => {
+            const canvas = chart.canvas;
+            const rect = canvas.getBoundingClientRect();
+            
+            // Remove previous event listeners
+            if (canvas._customLineMove) {
+                canvas.removeEventListener('mousemove', canvas._customLineMove);
+            }
+            if (canvas._customLineOut) {
+                canvas.removeEventListener('mouseout', canvas._customLineOut);
+            }
+            
+            // Define mousemove handler
+            canvas._customLineMove = function(e) {
+                const x = e.clientX - rect.left;
+                
+                const xAxis = chart.scales.x;
+                const dataIndex = Math.min(
+                    Math.max(
+                        Math.round(xAxis.getValueForPixel(x)),
+                        0
+                    ),
+                    datos.length - 1
+                );
+                
+                // Clear previous drawings
+                chart.draw();
+                
+                // Draw vertical line
+                const xPos = xAxis.getPixelForValue(dataIndex);
+                const ctx = chart.ctx;
+                
+                ctx.beginPath();
+                ctx.moveTo(xPos, chart.scales.y.top);
+                ctx.lineTo(xPos, chart.scales.y.bottom);
+                ctx.lineWidth = 1;
+                ctx.strokeStyle = 'rgba(0, 0, 0, 0.7)';
+                ctx.stroke();
+                
+                // Draw enhanced points at each dataset intersection
+                for (let i = 0; i < 3; i++) { // Only show points for the main 3 lines
+                    const dataset = chart.data.datasets[i];
+                    if (dataIndex < dataset.data.length) {
+                        const yValue = dataset.data[dataIndex];
+                        const yPos = chart.scales.y.getPixelForValue(yValue);
+                        
+                        // Draw a larger point
+                        ctx.beginPath();
+                        ctx.arc(xPos, yPos, 6, 0, 2 * Math.PI);
+                        ctx.fillStyle = dataset.borderColor;
+                        ctx.fill();
+                        ctx.strokeStyle = 'white';
+                        ctx.lineWidth = 2;
+                        ctx.stroke();
+                    }
+                }
+                
+                // Format date for the axis label
+                const fecha = new Date();
+                fecha.setMonth(fecha.getMonth() + datos[dataIndex].mes - 1);
+                const mesTexto = fecha.toLocaleString('es-ES', { month: 'short', year: 'numeric' });
+                
+                // Draw the month/year indicator below the line
+                ctx.fillStyle = 'rgba(0, 0, 0, 0.8)';
+                ctx.font = 'bold 12px Arial';
+                ctx.textAlign = 'center';
+                ctx.fillText(mesTexto, xPos, chart.scales.y.bottom + 20);
+                
+                // Update data display
+                updateDataDisplay(dataIndex);
+            };
+            
+            // Define mouseout handler
+            canvas._customLineOut = function() {
+                chart.draw();
+            };
+            
+            // Add event listeners
+            canvas.addEventListener('mousemove', canvas._customLineMove);
+            canvas.addEventListener('mouseout', canvas._customLineOut);
+        }
+    };
+    
+    // Function to update the data display box
+    function updateDataDisplay(index) {
+        if (index < 0 || index >= datos.length) return;
+        
+        // Get data for the selected month
+        const item = datos[index];
+        
+        // Format date for display
+        const fecha = new Date();
+        fecha.setMonth(fecha.getMonth() + item.mes - 1);
+        const mesTexto = fecha.toLocaleString('es-ES', { month: 'long', year: 'numeric' });
+        
+        // Create or update the display container
+        let displayContainer = document.getElementById('chart-data-display');
+        if (!displayContainer) {
+            displayContainer = document.createElement('div');
+            displayContainer.id = 'chart-data-display';
+            
+            // Add it after the chart container
+            const chartContainer = document.querySelector('.grafico-fullscreen');
+            chartContainer.parentNode.insertBefore(displayContainer, chartContainer.nextSibling);
+        }
+        
+        // Calculate accumulated values at this point
+        const interesAcum = interesAcumulado[index];
+        const principalAcum = principalAcumulado[index];
+        
+        // Preparar datos de comparación si hay datos originales
+        let comparacionHtml = '';
+        if (aplicarAbonos && datosOriginales && datosOriginales.length > index) {
+            const originalItem = datosOriginales[index];
+            const interesOriginalAcum = (index < interesAcumuladoOriginal.length) ? interesAcumuladoOriginal[index] : 0;
+            const principalOriginalAcum = (index < principalAcumuladoOriginal.length) ? principalAcumuladoOriginal[index] : 0;
+            
+            // Calcular diferencias
+            const difSaldo = originalItem.saldo - item.saldo;
+            const difInteres = interesOriginalAcum - interesAcum;
+            
+            if (difSaldo > 0 || difInteres > 0) {
+                comparacionHtml = `
+                    <div class="comparison-section">
+                        <div style="font-weight: bold; margin-bottom: 8px;">Comparación con crédito sin abonos:</div>
+                        <div class="data-row">
+                            <div class="color-indicator" style="background-color: rgba(0, 71, 171, 0.5);"></div>
+                            <div class="label">Diferencia en saldo:</div>
+                            <div class="value">${formatoMoneda(difSaldo, monedaSeleccionada)}</div>
+                        </div>
+                        <div class="data-row">
+                            <div class="color-indicator" style="background-color: rgba(76, 175, 80, 0.5);"></div>
+                            <div class="label">Diferencia en interés:</div>
+                            <div class="value">${formatoMoneda(difInteres, monedaSeleccionada)}</div>
+                        </div>
+                    </div>
+                `;
+            }
+        }
+        
+        // Update content
+        displayContainer.innerHTML = `
+            <div class="header">Al ${mesTexto}</div>
+            <div class="data-row">
+                <div class="color-indicator" style="background-color: #2196F3;"></div>
+                <div class="label">Principal pagado:</div>
+                <div class="value">${formatoMoneda(principalAcum, monedaSeleccionada)}</div>
+            </div>
+            <div class="data-row">
+                <div class="color-indicator" style="background-color: #4CAF50;"></div>
+                <div class="label">Interés pagado:</div>
+                <div class="value">${formatoMoneda(interesAcum, monedaSeleccionada)}</div>
+            </div>
+            <div class="data-row">
+                <div class="color-indicator" style="background-color: #0047AB;"></div>
+                <div class="label">Saldo pendiente:</div>
+                <div class="value">${formatoMoneda(item.saldo, monedaSeleccionada)}</div>
+            </div>
+            ${comparacionHtml}
+        `;
+    }
+    
+    // Create chart
+    chart = new Chart(ctx, {
+        type: 'line',
+        data: {
+            labels: meses,
+            datasets: datasets
+        },
+        options: {
+            responsive: true,
+            maintainAspectRatio: false,
+            interaction: {
+                mode: 'index',
+                intersect: false
+            },
+            plugins: {
+                tooltip: {
+                    enabled: false // Disable default tooltip, we'll use our custom one
+                },
+                legend: {
+                    position: 'top',
+                    labels: {
+                        boxWidth: 15,
+                        padding: 15,
+                        filter: function(legendItem, chartData) {
+                            // Si hay más de 6 datasets, solo mostrar algunos
+                            if (chartData.datasets.length > 6) {
+                                // Solo mostrar leyendas para los principales datasets
+                                const keysToShow = ['Saldo del préstamo', 'Interés pagado', 'Principal pagado'];
+                                if (aplicarAbonos) {
+                                    keysToShow.push('Saldo sin abonos');
+                                }
+                                return keysToShow.includes(legendItem.text);
+                            }
+                            return true;
+                        }
+                    }
+                }
+            },
+            scales: {
+                x: {
+                    title: {
+                        display: true,
+                        text: 'Año'
+                    },
+                    ticks: {
+                        callback: function(value, index, values) {
+                            // Convertir valor de mes a fecha
+                            if (index >= 0 && index < meses.length) {
+                                const fecha = new Date();
+                                fecha.setMonth(fecha.getMonth() + meses[index] - 1);
+                                const year = fecha.getFullYear();
+                                
+                                // Solo mostrar años en puntos específicos
+                                if (index === 0 || // Primer punto
+                                    index === meses.length - 1 || // Último punto
+                                    index % Math.max(1, Math.floor(meses.length / 5)) === 0) { // Distribución uniforme
+                                    return year;
+                                }
+                            }
+                            return '';
+                        }
+                    }
+                },
+                y: {
+                    beginAtZero: true,
+                    title: {
+                        display: true,
+                        text: 'Monto'
+                    },
+                    ticks: {
+                        callback: function(value) {
+                            // Simplificar valores grandes
+                            if (value >= 1000000) {
+                                return (value / 1000000).toFixed(1) + 'M';
+                            } else if (value >= 1000) {
+                                return (value / 1000).toFixed(0) + 'K';
+                            }
+                            return formatoMoneda(value, monedaSeleccionada);
+                        }
+                    }
+                }
+            }
+        },
+        plugins: [tooltipPlugin]
+    });
+    
+    // Initial display of data (first month)
+    updateDataDisplay(0);
+}
+    
+    // Function to update the data display box below the chart
+    function updateDataDisplay(index) {
+        if (index < 0 || index >= datos.length) return;
+        
+        // Get data for the selected month
+        const item = datos[index];
+        
+        // Format date for display
+        const fecha = new Date();
+        fecha.setMonth(fecha.getMonth() + item.mes - 1);
+        const mesTexto = fecha.toLocaleString('es-ES', { month: 'long', year: 'numeric' });
+        
+        // Create or update the display container
+        let displayContainer = document.getElementById('chart-data-display');
+        if (!displayContainer) {
+            displayContainer = document.createElement('div');
+            displayContainer.id = 'chart-data-display';
+            
+            // Add it after the chart container
+            const chartContainer = document.querySelector('.grafico-fullscreen');
+            chartContainer.parentNode.insertBefore(displayContainer, chartContainer.nextSibling);
+        }
+        
+        // Calculate accumulated values at this point
+        const interesAcum = interesAcumulado[index];
+        const principalAcum = principalAcumulado[index];
+        
+        // Preparar datos de comparación si hay datos originales
+        let comparacionHtml = '';
+        if (aplicarAbonos && datosOriginales && datosOriginales.length > index) {
+            const originalItem = datosOriginales[index];
+            const interesOriginalAcum = (index < interesAcumuladoOriginal.length) ? interesAcumuladoOriginal[index] : 0;
+            const principalOriginalAcum = (index < principalAcumuladoOriginal.length) ? principalAcumuladoOriginal[index] : 0;
+            
+            // Calcular diferencias
+            const difSaldo = originalItem.saldo - item.saldo;
+            const difInteres = interesOriginalAcum - interesAcum;
+            
+            if (difSaldo > 0 || difInteres > 0) {
+                comparacionHtml = `
+                    <div class="comparison-section">
+                        <div style="font-weight: bold; margin-bottom: 8px;">Comparación con crédito sin abonos:</div>
+                        <div class="data-row">
+                            <div class="color-indicator" style="background-color: rgba(0, 71, 171, 0.5);"></div>
+                            <div class="label">Diferencia en saldo:</div>
+                            <div class="value">${formatoMoneda(difSaldo, monedaSeleccionada)}</div>
+                        </div>
+                        <div class="data-row">
+                            <div class="color-indicator" style="background-color: rgba(76, 175, 80, 0.5);"></div>
+                            <div class="label">Diferencia en interés:</div>
+                            <div class="value">${formatoMoneda(difInteres, monedaSeleccionada)}</div>
+                        </div>
+                    </div>
+                `;
+            }
+        }
+        
+        // Update content
+        displayContainer.innerHTML = `
+            <div class="header">Al ${mesTexto}</div>
+            <div class="data-row">
+                <div class="color-indicator" style="background-color: #2196F3;"></div>
+                <div class="label">Principal pagado:</div>
+                <div class="value">${formatoMoneda(principalAcum, monedaSeleccionada)}</div>
+            </div>
+            <div class="data-row">
+                <div class="color-indicator" style="background-color: #4CAF50;"></div>
+                <div class="label">Interés pagado:</div>
+                <div class="value">${formatoMoneda(interesAcum, monedaSeleccionada)}</div>
+            </div>
+            <div class="data-row">
+                <div class="color-indicator" style="background-color: #0047AB;"></div>
+                <div class="label">Saldo pendiente:</div>
+                <div class="value">${formatoMoneda(item.saldo, monedaSeleccionada)}</div>
+            </div>
+            ${comparacionHtml}
+        `;
+    }
+    
+    // Create chart
+    chart = new Chart(ctx, {
+        type: 'line',
+        data: {
+            labels: meses,
+            datasets: datasets
+        },
+        options: {
+            responsive: true,
+            maintainAspectRatio: false,
+            interaction: {
+                mode: 'index',
+                intersect: false
+            },
+            plugins: {
+                tooltip: {
+                    enabled: false // Disable default tooltip, we'll use our custom one
+                },
+                legend: {
+                    position: 'top',
+                    labels: {
+                        boxWidth: 15,
+                        padding: 15,
+                        filter: function(legendItem, chartData) {
+                            // Si hay más de 6 datasets, solo mostrar algunos
+                            if (chartData.datasets.length > 6) {
+                                // Solo mostrar leyendas para los principales datasets
+                                const keysToShow = ['Saldo del préstamo', 'Interés pagado', 'Principal pagado'];
+                                if (aplicarAbonos) {
+                                    keysToShow.push('Saldo sin abonos');
+                                }
+                                return keysToShow.includes(legendItem.text);
+                            }
+                            return true;
+                        }
+                    }
+                }
+            },
+            scales: {
+                x: {
+                    title: {
+                        display: true,
+                        text: 'Año'
+                    },
+                    ticks: {
+                        callback: function(value, index, values) {
+                            // Convertir valor de mes a fecha
+                            if (index >= 0 && index < meses.length) {
+                                const fecha = new Date();
+                                fecha.setMonth(fecha.getMonth() + meses[index] - 1);
+                                const year = fecha.getFullYear();
+                                
+                                // Solo mostrar años en puntos específicos
+                                if (index === 0 || // Primer punto
+                                    index === meses.length - 1 || // Último punto
+                                    index % Math.max(1, Math.floor(meses.length / 5)) === 0) { // Distribución uniforme
+                                    return year;
+                                }
+                            }
+                            return '';
+                        }
+                    }
+                },
+                y: {
+                    beginAtZero: true,
+                    title: {
+                        display: true,
+                        text: 'Monto'
+                    },
+                    ticks: {
+                        callback: function(value) {
+                            // Simplificar valores grandes
+                            if (value >= 1000000) {
+                                return (value / 1000000).toFixed(1) + 'M';
+                            } else if (value >= 1000) {
+                                return (value / 1000).toFixed(0) + 'K';
+                            }
+                            return formatoMoneda(value, monedaSeleccionada);
+                        }
+                    }
+                }
+            }
+        },
+        plugins: [tooltipPlugin]
+    });
+    
+    // Add CSS for chart container if needed
+    const chartContainer = document.querySelector('.grafico-fullscreen');
+    if (chartContainer) {
+        chartContainer.style.position = 'relative';
+    }
+    
+    // Initial display of data (first month)
+    updateDataDisplay(0);
+}
+
+// CSS styles to add to the head
+const chartStyles = `
+.grafico {
+    position: relative;
+    box-shadow: 0 2px 10px rgba(0,0,0,0.1);
+    border-radius: 8px;
+    padding: 10px;
+    background-color: white;
+    margin-bottom: 20px;
+}
+
+#chart-data-display {
+    font-family: 'Raleway', sans-serif;
+    transition: all 0.3s ease;
+}
+
+@media (max-width: 768px) {
+    #chart-data-display {
+        position: static !important;
+        margin-top: 10px;
+        width: 100%;
+    }
+}
+`;
+
+// Function to inject styles
+function addChartStyles() {
+    if (!document.getElementById('chart-custom-styles')) {
+        const styleElement = document.createElement('style');
+        styleElement.id = 'chart-custom-styles';
+        styleElement.textContent = chartStyles;
+        document.head.appendChild(styleElement);
+    }
+}
+
+// Call this when the page loads
+document.addEventListener('DOMContentLoaded', function() {
+    addChartStyles();
+});
+
+function calcular() {
+    console.log("Iniciando cálculo...");
+
+    var monto = parseFloat(document.getElementById("monto").value);
+    if (!monto) {
+        alert("Por favor, ingrese el monto del crédito.");
+        return;
+    }
+    console.log("Monto:", monto);
+
+    var plazoTotal = parseInt(document.getElementById("plazo").value) * 12;
+    if (!plazoTotal) {
+        alert("Por favor, ingrese el plazo del crédito.");
+        return;
+    }
+    var monedaSeleccionada = document.getElementById("moneda").value;
+    var simboloMoneda = (monedaSeleccionada === "colones") ? "₡" : "$";
+    console.log("Plazo:", plazoTotal, "Moneda:", monedaSeleccionada);
+
+    var tbp = parseFloat(document.getElementById("tbp").value) / 100;
+    var margen = parseFloat(document.getElementById("margen").value) / 100;
+    if (isNaN(tbp) || isNaN(margen)) {
+        alert("Por favor, ingrese los valores de TBP y Margen.");
+        return;
+    }
+    console.log("TBP:", tbp, "Margen:", margen);
+
+    var duraciones = Array.from(document.getElementsByClassName("duracion")).map(input => parseInt(input.value));
+    var tasas = Array.from(document.getElementsByClassName("tasa")).map(input => parseFloat(input.value) / 100);
+    if (duraciones.length === 0 || tasas.length === 0 || duraciones.includes(NaN) || tasas.includes(NaN)) {
+        alert("Por favor, complete todas las tasas de interés.");
+        return;
+    }
+    console.log("Duraciones:", duraciones, "Tasas:", tasas);
+    
+    // NUEVO: Calcular amortización inicial (sin abonos) independiente de los abonos extras
+    amortizacionInicial = calcularAmortizacion(monto, plazoTotal, duraciones, tasas, tbp, margen, 0);
+    
+    // NUEVO: Actualizar la tabla de desglose con la amortización inicial
+    actualizarTablaDesglose(amortizacionInicial, monedaSeleccionada);
+    
+    // Continuar con el resto de la función calcular() sin cambios:
+    // Verificar si se aplican abonos extraordinarios
+    var aplicarAbonos = document.getElementById("activarAbonos").checked;
+    var tipoAbono = aplicarAbonos ? document.querySelector('input[name="tipoAbono"]:checked').value : null;
+    var montoAbono = 0;
+    
+    // Según el tipo de abono, obtenemos el monto correspondiente
+    if (aplicarAbonos) {
+        if (tipoAbono === "reducirPlazo") {
+            montoAbono = parseFloat(document.getElementById("montoAbonoPlazo").value) || 0;
+            if (montoAbono <= 0) {
+                alert("Por favor, ingrese un monto de abono válido para reducir plazo.");
+                return;
+            }
+        } else if (tipoAbono === "reducirCuota") {
+            montoAbono = parseFloat(document.getElementById("montoAbonoCuota").value) || 0;
+            if (montoAbono <= 0) {
+                alert("Por favor, ingrese un monto de abono válido para reducir cuota.");
+                return;
+            }
+        } else if (tipoAbono === "modoMixto") {
+            // Para el modo mixto, verificamos que ya se hayan calculado los abonos necesarios
+            if (typeof window.abono1Mixto === 'undefined' || typeof window.abono2Mixto === 'undefined' || 
+                typeof window.periodoMixto === 'undefined' || typeof window.cuotaObjetivoFase2 === 'undefined') {
+                alert("Por favor, calcule primero los abonos necesarios para el modo mixto.");
+                return;
+            }
+            montoAbono = window.abono1Mixto; // Para mostrar en la comparación
+        }
+    }
+
+    // Calcular amortización original sin abonos (para comparación)
+    var amortizacionSinAbonos = calcularAmortizacion(monto, plazoTotal, duraciones, tasas, tbp, margen, 0);
+    var totalInteresSinAbonos = amortizacionSinAbonos.reduce((sum, item) => sum + item.interes, 0);
+    
+    // Calcular amortización según el tipo seleccionado
+    var amortizacion;
+    if (aplicarAbonos && tipoAbono === "reducirCuota") {
+        var periodoAbono = parseInt(document.getElementById("periodoAbono").value) || plazoTotal;
+        amortizacion = calcularAmortizacionReducirCuotaConPeriodo(
+            monto, plazoTotal, duraciones, tasas, tbp, margen, montoAbono, periodoAbono
+        );
+    } else if (aplicarAbonos && tipoAbono === "modoMixto") {
+        // Para el modo mixto, usamos las variables globales establecidas en calcularAbonoMixto()
+        amortizacion = calcularAmortizacionModoMixto(
+            monto, plazoTotal, duraciones, tasas, tbp, margen, 
+            window.abono1Mixto, window.abono2Mixto, window.periodoMixto, window.cuotaObjetivoFase2
+        );
+    } else {
+        // Para el caso sin abonos o reducir plazo, la función original funciona bien
+        amortizacion = calcularAmortizacion(monto, plazoTotal, duraciones, tasas, tbp, margen, aplicarAbonos ? montoAbono : 0);
+    }
+    
+    var totalInteres = amortizacion.reduce((sum, item) => sum + item.interes, 0);
+
+    // Actualizar la tabla de amortización
+    var tablaAmortizacion = document.getElementById("tablaAmortizacion").getElementsByTagName("tbody")[0];
+    tablaAmortizacion.innerHTML = "";
+
+    amortizacion.forEach(function(fila, index) {
+        var nuevaFila = tablaAmortizacion.insertRow(tablaAmortizacion.rows.length);
+        
+        var celda = nuevaFila.insertCell(0);
+        celda.appendChild(document.createTextNode(index + 1));
+        
+        celda = nuevaFila.insertCell(1);
+        celda.appendChild(document.createTextNode(formatoMoneda(fila.cuotaMensual, monedaSeleccionada)));
+        
+        celda = nuevaFila.insertCell(2);
+        celda.appendChild(document.createTextNode(formatoMoneda(fila.interes, monedaSeleccionada)));
+        
+        celda = nuevaFila.insertCell(3);
+        celda.appendChild(document.createTextNode(formatoMoneda(fila.principal, monedaSeleccionada)));
+        
+        celda = nuevaFila.insertCell(4);
+        celda.appendChild(document.createTextNode(formatoMoneda(fila.abonoExtra || 0, monedaSeleccionada)));
+        if (fila.abonoExtra > 0) {
+            celda.classList.add('abono-extra-col');
+        }
+        
+        celda = nuevaFila.insertCell(5);
+        celda.appendChild(document.createTextNode(formatoMoneda(fila.saldo, monedaSeleccionada)));
+    });
+
+    // COMENTAR O ELIMINAR EL BLOQUE DE ACTUALIZACIÓN DE LA TABLA DE DESGLOSE
+    // Esta parte ya no es necesaria porque la tabla de desglose se actualiza arriba con los datos iniciales
+    // var cuotasUnicas = [...new Set(amortizacion.map(item => item.cuotaMensual.toFixed(2)))];
+    // var tablaDesglose = document.getElementById("tablaDesglose").getElementsByTagName("tbody")[0];
+    // tablaDesglose.innerHTML = "";
+    // ... (el resto del bloque de actualización de tabla de desglose)
+    
+    // Mostrar comparación de resultados si hay abonos
+    if (aplicarAbonos) {
+        document.getElementById("comparacionResultados").style.display = "block";
+        
+        // Calcular ahorro según tipo de abono
+        if (tipoAbono === "reducirPlazo") {
+            // Ahorro de intereses y meses
+            var ahorroIntereses = totalInteresSinAbonos - totalInteres;
+            var ahorroMeses = amortizacionSinAbonos.length - amortizacion.length;
+            
+            document.getElementById("resumenOriginal").innerHTML = 
+                "<strong>Sin Abonos:</strong> " + 
+                "Plazo total: " + amortizacionSinAbonos.length + " meses | " +
+                "Total de intereses: " + formatoMoneda(totalInteresSinAbonos, monedaSeleccionada);
+            
+            document.getElementById("resumenConAbonos").innerHTML = 
+                "<strong>Con Abonos (Reducción de Plazo):</strong> " + 
+                "Plazo total: " + amortizacion.length + " meses | " +
+                "Total de intereses: " + formatoMoneda(totalInteres, monedaSeleccionada);
+            
+            document.getElementById("ahorro").innerHTML = 
+                "<strong>Ahorro:</strong> " + 
+                ahorroMeses + " meses | " +
+                formatoMoneda(ahorroIntereses, monedaSeleccionada) + " en intereses";
+        } else {
+            // Reducción de cuota - comparar cuotas y ahorro total
+            var cuotaOriginal = amortizacionSinAbonos[0].cuotaMensual;
+            var cuotaPromedio = amortizacion.reduce((sum, item) => sum + item.cuotaMensual, 0) / amortizacion.length;
+            var reduccionCuota = cuotaOriginal - cuotaPromedio;
+            var ahorroIntereses = totalInteresSinAbonos - totalInteres;
+            
+            document.getElementById("resumenOriginal").innerHTML = 
+                "<strong>Sin Abonos:</strong> " + 
+                "Cuota mensual: " + formatoMoneda(cuotaOriginal, monedaSeleccionada) + " | " +
+                "Total de intereses: " + formatoMoneda(totalInteresSinAbonos, monedaSeleccionada);
+            
+            document.getElementById("resumenConAbonos").innerHTML = 
+                "<strong>Con Abonos (Reducción de Cuota):</strong> " + 
+                "Cuota promedio: " + formatoMoneda(cuotaPromedio, monedaSeleccionada) + " | " +
+                "Total de intereses: " + formatoMoneda(totalInteres, monedaSeleccionada);
+            
+            document.getElementById("ahorro").innerHTML = 
+                "<strong>Ahorro:</strong> " + 
+                formatoMoneda(reduccionCuota, monedaSeleccionada) + " por cuota | " +
+                formatoMoneda(ahorroIntereses, monedaSeleccionada) + " en intereses totales";
+        }
+    } else {
+        document.getElementById("comparacionResultados").style.display = "none";
+    }
+
+    // Actualizar el gráfico con los nuevos datos
+actualizarGraficoWrapper(amortizacion, amortizacionSinAbonos, aplicarAbonos, tipoAbono, monedaSeleccionada);
+
+console.log(amortizacion); // Mantén este console.log si lo tenías antes
+} // <-- AQUÍ DEBE TERMINAR LA FUNCIÓN calcular()
+
+// Función para calcular la amortización con o sin abonos (reducción de plazo)
+function calcularAmortizacion(monto, plazoTotal, duraciones, tasas, tbp, margen, montoAbono) {
+    var saldo = monto;
+    var amortizacion = [];
+    var mesActual = 0;
+
+    for (let j = 0; j <= duraciones.length; j++) {
+        let tasaActual = (j < duraciones.length) ? tasas[j] : tbp + margen;
+        let plazo = (j < duraciones.length) ? duraciones[j] : plazoTotal - mesActual;
+
+        var tasaMensual = tasaActual / 12;
+        var cuotaMensual = monto * (tasaMensual / (1 - Math.pow(1 + tasaMensual, -plazoTotal)));
+
+        for (let i = 1; i <= plazo; i++) {
+            var interes = saldo * tasaMensual;
+            var principal = cuotaMensual - interes;
+
+            if (saldo - principal < 0) {
+                principal = saldo;
+                cuotaMensual = principal + interes;
+            }
+
+            // Aplicar abono extra si corresponde
+            var abonoExtra = 0;
+            if (montoAbono > 0 && saldo > 0) {
+                abonoExtra = montoAbono;
+                
+                // Ajuste para el último pago (no abonar más de lo necesario)
+                if (saldo - principal - abonoExtra < 0) {
+                    abonoExtra = Math.max(0, saldo - principal);
+                }
+            }
+            
+            // Actualizar saldo
+            saldo -= (principal + abonoExtra);
+            saldo = Math.max(0, saldo); // Garantizar que el saldo no sea negativo
+
+            amortizacion.push({
+                mes: mesActual + i,
+                cuotaMensual: cuotaMensual,
+                interes: interes,
+                principal: principal,
+                abonoExtra: abonoExtra,
+                saldo: saldo,
+                tasa: tasaActual * 100
+            });
+
+            if (saldo <= 0) break;
+        }
+
+        mesActual += plazo;
+        if (saldo <= 0) break;
+    }
+
+    return amortizacion;
+}
+
+// Función para calcular amortización con reducción de cuota
+function calcularAmortizacionReducirCuota(monto, plazoTotal, duraciones, tasas, tbp, margen, montoAbono) {
+    var saldo = monto;
+    var amortizacion = [];
+    var mesActual = 0;
+    
+    // Acumulador para mes actual global
+    var mesGlobal = 1;
+
+    for (let j = 0; j <= duraciones.length; j++) {
+        let tasaActual = (j < duraciones.length) ? tasas[j] : tbp + margen;
+        let plazo = (j < duraciones.length) ? duraciones[j] : plazoTotal - mesActual;
+        let plazoPendiente = plazoTotal - mesActual;
+
+        // Primer cálculo de cuota para este periodo
+        var tasaMensual = tasaActual / 12;
+        
+        for (let i = 1; i <= plazo; i++) {
+            // Recalcular la cuota en cada paso basado en el saldo actual y el plazo restante
+            var plazoPendienteActual = plazoTotal - (mesGlobal - 1);
+            var cuotaMensual = saldo * (tasaMensual / (1 - Math.pow(1 + tasaMensual, -plazoPendienteActual)));
+            
+            var interes = saldo * tasaMensual;
+            var principal = cuotaMensual - interes;
+
+            if (saldo - principal < 0) {
+                principal = saldo;
+                cuotaMensual = principal + interes;
+            }
+
+            // Aplicar abono extra si corresponde
+            var abonoExtra = 0;
+            if (montoAbono > 0 && saldo > 0) {
+                abonoExtra = montoAbono;
+                
+                // Ajuste para el último pago (no abonar más de lo necesario)
+                if (saldo - principal - abonoExtra < 0) {
+                    abonoExtra = Math.max(0, saldo - principal);
+                }
+            }
+            
+            // Actualizar saldo
+            saldo -= (principal + abonoExtra);
+            saldo = Math.max(0, saldo); // Garantizar que el saldo no sea negativo
+
+            amortizacion.push({
+                mes: mesGlobal,
+                cuotaMensual: cuotaMensual,
+                interes: interes,
+                principal: principal,
+                abonoExtra: abonoExtra,
+                saldo: saldo,
+                tasa: tasaActual * 100
+            });
+
+            mesGlobal++;
+            
+            if (saldo <= 0) break;
+        }
+
+        mesActual += plazo;
+        if (saldo <= 0) break;
+    }
+
+    return amortizacion;
+}
+
+// Función para inicializar la calculadora
+function inicializar() {
+    // Agregar la primera tasa al cargar la página
+    if (document.getElementById("tasasContainer")) {
+        agregarTasa();
+    } else {
+        console.error("No se encontró el contenedor de tasas");
+        // Intentarlo nuevamente después de un tiempo
+        setTimeout(function() {
+            if (document.getElementById("tasasContainer")) {
+                agregarTasa();
+            }
+        }, 500);
+    }
+    
+    // Configurar evento para cambios en tipo de abono
+    var radios = document.querySelectorAll('input[name="tipoAbono"]');
+    radios.forEach(function(radio) {
+        radio.addEventListener('change', cambiarTipoAbono);
+    });
+}
+
+// Ejecutar la inicialización cuando se carga el documento
+window.onload = inicializar;
+
+// Inicializar estilos del gráfico cuando se cargue la página
+document.addEventListener('DOMContentLoaded', function() {
+    addChartStyles();
+});
+
+// Función para manejar el cambio de pestañas
+function setupTabs() {
+  const tabButtons = document.querySelectorAll('.tab-button');
+  
+  tabButtons.forEach(button => {
+    button.addEventListener('click', () => {
+      // Desactivar todas las pestañas
+      tabButtons.forEach(btn => btn.classList.remove('active'));
+      document.querySelectorAll('.tab-content').forEach(content => content.classList.remove('active'));
+      
+      // Activar la pestaña seleccionada
+      button.classList.add('active');
+      const tabId = button.getAttribute('data-tab');
+      document.getElementById(`${tabId}-content`).classList.add('active');
+      
+      // Si cambiamos a la pestaña de gráfico, actualizar el gráfico para que se ajuste al nuevo tamaño
+      if (tabId === 'grafico' && chart) {
+        setTimeout(() => {
+          chart.resize();
+          // Re-dibujar el gráfico con los datos actuales
+          if (window.currentChartData) {
+            actualizarGrafico(
+              window.currentChartData.datos,
+              window.currentChartData.datosOriginales,
+              window.currentChartData.aplicarAbonos,
+              window.currentChartData.tipoAbono,
+              window.currentChartData.monedaSeleccionada
+            );
+          }
+        }, 100);
+      }
+    });
+  });
+}
+
+// Modificación a la función actualizarGrafico para guardar los datos actuales
+function actualizarGraficoWrapper(datos, datosOriginales, aplicarAbonos, tipoAbono, monedaSeleccionada) {
+  // Guardar los datos actuales para poder refrescar el gráfico al cambiar de pestaña
+  window.currentChartData = {
+    datos: datos,
+    datosOriginales: datosOriginales,
+    aplicarAbonos: aplicarAbonos,
+    tipoAbono: tipoAbono,
+    monedaSeleccionada: monedaSeleccionada
+  };
+  
+  // Llamar a la función original
+  // Llamar a la función original
+actualizarGrafico(datos, datosOriginales, aplicarAbonos, tipoAbono, monedaSeleccionada);
+}
+
+// Inicializar las pestañas cuando se cargue la página
+document.addEventListener('DOMContentLoaded', function() {
+  setupTabs();
+  addChartStyles();
+});
+</script>
+</body>
+</html>
